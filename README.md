@@ -1,6 +1,6 @@
 ## Getting Started
 
-First, install all the Python packages with PIP
+To get started, first install all the Python packages with PIP
 
 ```bash
 pip install -r requirements.txt
@@ -13,3 +13,5 @@ jupyter lab
 ```
 
 The notebook will be available at localhost:8888
+
+You'll also need to create a file called `.env` to hold all the API keys.
