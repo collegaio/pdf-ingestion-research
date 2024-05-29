@@ -1,0 +1,174 @@
+{
+  "cds-files": [
+    {
+      "id": "arizona-state",
+      "filename": "Arizona State University CDS_2023-2024.pdf",
+      "description": "Admissions data for Arizona State University"
+    },
+    {
+      "id": "brigham-young",
+      "filename": "Brigham Young University CDS_2023-2024.pdf",
+      "description": "Admissions data for Brigham Young University"
+    },
+    {
+      "id": "fiu",
+      "filename": "Florida International University CDS_2023-2024.pdf",
+      "description": "Admissions data for Florida International University"
+    },
+    {
+      "id": "u-indiana",
+      "filename": "Indiana University-Bloomington CDS_2023-2024.pdf",
+      "description": "Admissions data for Indiana University-Bloomington"
+    },
+    {
+      "id": "iowa-state",
+      "filename": "Iowa State University CDS_2023-2024.pdf",
+      "description": "Admissions data for Iowa State University"
+    },
+    {
+      "id": "michigan-state",
+      "filename": "Michigan State University CDS_2023-2024.pdf",
+      "description": "Admissions data for Michigan State University"
+    },
+    {
+      "id": "mississippi-state",
+      "filename": "Mississippi State University CDS_2023-2024.pdf",
+      "description": "Admissions data for Mississippi State University"
+    },
+    {
+      "id": "nyu",
+      "filename": "New York University CDS_2023-2024.pdf",
+      "description": "Admissions data for New York University"
+    },
+    {
+      "id": "nc-state",
+      "filename": "North Carolina State University at Raleigh CDS_2023-2024.pdf",
+      "description": "Admissions data for North Carolina State University at Raleigh"
+    },
+    {
+      "id": "osu",
+      "filename": "Oklahoma State University-Main Campus CDS_2023-2024.pdf",
+      "description": "Admissions data for Oklahoma State University-Main Campus"
+    },
+    {
+      "id": "penn-state",
+      "filename": "Penn State CDS_2023-2024.pdf",
+      "description": "Admissions data for Penn State"
+    },
+    {
+      "id": "purdue",
+      "filename": "Purdue University-Main Campus CDS_2023-2024.pdf",
+      "description": "Admissions data for Purdue University-Main Campus"
+    },
+    {
+      "id": "san-diego-state",
+      "filename": "San Diego State University CDS_2023-2024.pdf",
+      "description": "Admissions data for San Diego State University"
+    },
+    {
+      "id": "temple",
+      "filename": "Temple University CDS_2023-2024.pdf",
+      "description": "Admissions data for Temple University"
+    },
+    {
+      "id": "texas-a-m",
+      "filename": "Texas A&M CDS_2023-2024.pdf",
+      "description": "Admissions data for Texas A&M"
+    },
+    {
+      "id": "bama",
+      "filename": "The University of Alabama CDS_2023-2024.pdf",
+      "description": "Admissions data for The University of Alabama"
+    },
+    {
+      "id": "ut-austin",
+      "filename": "The University of Texas at Austin CDS_2023-2024.pdf",
+      "description": "Admissions data for The University of Texas at Austin"
+    },
+    {
+      "id": "suny-buffalo",
+      "filename": "University at Buffalo CDS_2023-2024.pdf",
+      "description": "Admissions data for University at Buffalo"
+    },
+    {
+      "id": "university-of-arizona",
+      "filename": "University of Arizona CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Arizona"
+    },
+    {
+      "id": "ucla",
+      "filename": "University of California-Los Angeles CDS_2023-2024.pdf",
+      "description": "Admissions data for University of California-Los Angeles"
+    },
+    {
+      "id": "ucsd",
+      "filename": "University of California-San Diego CDS_2023-2024.pdf",
+      "description": "Admissions data for University of California-San Diego"
+    },
+    {
+      "id": "ucf",
+      "filename": "University of Central Florida CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Central Florida"
+    },
+    {
+      "id": "cu-boulder",
+      "filename": "University of Colorado Boulder CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Colorado Boulder"
+    },
+    {
+      "id": "uga",
+      "filename": "University of Georgia CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Georgia"
+    },
+    {
+      "id": "university-of-iowa",
+      "filename": "University of Iowa CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Iowa"
+    },
+    {
+      "id": "umass-amherst",
+      "filename": "University of Massachusetts-Amherst CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Massachusetts-Amherst"
+    },
+    {
+      "id": "umich",
+      "filename": "University of Michigan-Ann Arbor CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Michigan-Ann Arbor"
+    },
+    {
+      "id": "un-lincoln",
+      "filename": "University of Nebraska-Lincoln CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Nebraska-Lincoln"
+    },
+    {
+      "id": "unlv",
+      "filename": "University of Nevada-Las Vegas CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Nevada-Las Vegas"
+    },
+    {
+      "id": "u-north-texas",
+      "filename": "University of North Texas CDS_2023-2024.pdf",
+      "description": "Admissions data for University of North Texas"
+    },
+    {
+      "id": "u-pitt",
+      "filename": "University of Pittsburgh-Pittsburgh Campus CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Pittsburgh-Pittsburgh Campus"
+    },
+    {
+      "id": "usf",
+      "filename": "University of South Florida CDS_2023-2024.pdf",
+      "description": "Admissions data for University of South Florida"
+    },
+    {
+      "id": "uw-madison",
+      "filename": "University of Wisconsin-Madison CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Wisconsin-Madison"
+    },
+    {
+      "id": "u-milwaukee",
+      "filename": "University of Wisconsin-Milwaukee CDS_2023-2024.pdf",
+      "description": "Admissions data for University of Wisconsin-Milwaukee"
+    }
+  ]
+}
