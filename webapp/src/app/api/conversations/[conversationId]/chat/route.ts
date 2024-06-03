@@ -50,7 +50,9 @@ export const POST = async (
       .reverse()
       .map((message) => message.text)
       .join("\n\n"),
-    history.reverse().map((message) => message.text),
+    history
+      .reverse()
+      .map((message) => ({ text: message.text, role: message.role })),
   );
 
   const responseMessage = await db.message.create({

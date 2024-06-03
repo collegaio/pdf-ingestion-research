@@ -10,7 +10,10 @@ const createChatAPIClient = () => {
 
 const chatAPIClient = createChatAPIClient();
 
-export const callChatAPI = async (message: string, history: string[]) => {
+export const callChatAPI = async (
+  message: string,
+  history: { text: string; role: string }[],
+) => {
   const response = await chatAPIClient.post<{ message: string }>("/chat", {
     message: message,
     chat_history: history,

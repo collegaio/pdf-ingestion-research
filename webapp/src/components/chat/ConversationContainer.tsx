@@ -60,7 +60,13 @@ const ConversationContainer = ({
     }, 2_000);
 
     return () => clearTimeout(timeoutId);
-  }, [hasSentMessage, conversationId, messagesResponse, mutateMessages]);
+  }, [
+    message,
+    hasSentMessage,
+    conversationId,
+    messagesResponse,
+    mutateMessages,
+  ]);
 
   // Start at bottom of screen
   useEffect(() => {
