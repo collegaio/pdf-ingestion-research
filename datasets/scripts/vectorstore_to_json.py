@@ -6,6 +6,7 @@ import asyncio
 from llama_index.core import VectorStoreIndex
 from llama_index.core.llms import LLM
 from llama_index.llms.openai import OpenAI
+from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from pinecone import Pinecone
 
@@ -150,19 +151,27 @@ async def build_cds_info_json(dataset_id: str, index: VectorStoreIndex, llm: LLM
 
 async def main():
     llm = OpenAI(api_key=openai_api_key)
+    embed_model = OpenAIEmbedding(
+        api_key=openai_api_key, model=OpenAIEmbeddingModelType.TEXT_EMBED_3_LARGE
+    )
     pc = Pinecone(api_key=pinecone_api_key)
 
     index = VectorStoreIndex.from_vector_store(
-        vector_store=PineconeVectorStore(pc.Index(pinecone_index_name))
+        vector_store=PineconeVectorStore(pc.Index(pinecone_index_name)),
+        embed_model=embed_model,
     )
 
     # Run on all datasets
     # TODO: skip missing indexes + warning
     with open("../../datasets.json", "r") as fp:
-        datasets = [CDSDataset(**doc) for doc in json.load(fp)["cds-files"]][11:12]
+        datasets = [CDSDataset(**doc) for doc in json.load(fp)["cds-files"]]
 
     asyncio.gather(
-        (build_cds_info_json(dataset.id, index, llm) for dataset in datasets)
+        *(
+            build_cds_info_json(dataset.id, index, llm)
+            for dataset in datasets
+            # if dataset.id in set(["purdue"])
+        )
     )
 
 

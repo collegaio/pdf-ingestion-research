@@ -5,18 +5,8 @@ from typing import List
 import dotenv
 from fsspec import AbstractFileSystem
 
-from pinecone import Pinecone, ServerlessSpec
 from llama_parse import LlamaParse
 
-from llama_index.core import VectorStoreIndex, StorageContext, SimpleDirectoryReader
-from llama_index.core.schema import ObjectType, Document
-from llama_index.core.schema import BaseNode, TextNode
-from llama_index.core.embeddings import BaseEmbedding
-from llama_index.core.vector_stores import SimpleVectorStore
-from llama_index.core.storage.docstore import SimpleDocumentStore
-from llama_index.vector_stores.pinecone import PineconeVectorStore
-from llama_index.core.readers.base import BasePydanticReader
-from llama_index.embeddings.openai import OpenAIEmbedding
 import s3fs
 
 from dataset_tools.cds.models import CDSDataset
@@ -32,34 +22,38 @@ s3_url = "https://seskderhisdikbcyrwcw.supabase.co/storage/v1/s3"
 s3_access_key_id = os.environ["S3_ACCESS_KEY_ID"]
 s3_secret_access_key = os.environ["S3_SECRET_ACCESS_KEY"]
 
-pinecone_index_name = "cds-index-test"
 
-
-async def load_cds_documents(
-    input_dir: str,
-    datasets: List[CDSDataset],
-    # fs: AbstractFileSystem,
-    parser: BasePydanticReader,
-):
-    reader = SimpleDirectoryReader(
-        input_files=(os.path.join(input_dir, doc.filename) for doc in datasets),
-        # fs=fs,
-        file_extractor={".pdf": parser},
+async def parse_and_save_document(input_dir: str, output_dir: str, dataset: CDSDataset):
+    print(f"loading documents for: {dataset.id}")
+    parser = LlamaParse(
+        result_type="markdown",
+        api_key=llama_cloud_api_key,
+        gpt4o_mode=True,
+        # gpt4o_api_key=openai_api_key,
     )
 
-    return await reader.aload_data()
+    # reader = SimpleDirectoryReader(
+    #     input_files=[os.path.join(input_dir, dataset.filename)],
+    #     # fs=fs,
+    #     file_extractor={".pdf": parser},
+    # )
 
+    # documents = await reader.aload_data()
+    documents = await parser.aload_data(os.path.join(input_dir, dataset.filename))
+    print("documents loaded:", len(documents))
 
-def save_documents(
-    output_dir: str, documents: List[Document], datasets: List[CDSDataset]
-):
-    datasets_by_filename = {doc.filename: doc for doc in datasets}
+    if documents == []:
+        print("no source documents parsed for dataset:", dataset.id)
+        return
 
-    for document in documents:
-        dataset = datasets_by_filename[document.metadata["file_name"]]
-
-        with open(os.path.join(output_dir, f"{dataset.id}.md"), "w") as fp:
+    path = os.path.join(output_dir, f"{dataset.id}.md")
+    with open(path, "w") as fp:
+        for document in documents:
             fp.write(document.text)
+
+    print(f"saved md for {dataset.id} to {path}")
+    # for node in nodes:
+    # fp.write(node.text)
 
 
 async def main():
@@ -68,26 +62,22 @@ async def main():
     # )
 
     # cds_files.ls("llm-training-data-bucket/cds-files")
-    # TODO: download files to PDF
-    parser = LlamaParse(
-        result_type="markdown",
-        api_key=llama_cloud_api_key,
-    )
+    # TODO: download PDFs
 
     with open("../../datasets.json", "r") as fp:
         datasets = [CDSDataset(**doc) for doc in json.load(fp)["cds-files"]]
 
-    documents = await load_cds_documents(
-        # input_dir="llm-training-data-bucket/cds-files",
-        input_dir="../cds/pdf",
-        datasets=datasets[10:11],
-        # fs=cds_files,
-        parser=parser,
+    await asyncio.gather(
+        *(
+            parse_and_save_document(
+                input_dir="../cds/pdf",
+                output_dir="../cds/md",
+                dataset=dataset,
+            )
+            for dataset in datasets
+            # if dataset.id in set(["arizona-state"])
+        )
     )
-
-    # print(documents)
-    # TODO: clear MD files
-    save_documents("../cds/md", documents, datasets)
 
 
 if __name__ == "__main__":

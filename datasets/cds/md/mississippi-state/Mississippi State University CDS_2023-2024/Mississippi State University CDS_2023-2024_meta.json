@@ -1,0 +1,158 @@
+{
+    "languages": [
+        "en"
+    ],
+    "filetype": "pdf",
+    "toc": [
+        {
+            "title": "A. General Information",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 0,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1029.0,
+                0.0
+            ]
+        },
+        {
+            "title": "B. Enrollment and Persistence",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 2,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1131.0,
+                0.0
+            ]
+        },
+        {
+            "title": "C.First-time Freshmen Admission",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 5,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1131.0,
+                0.0
+            ]
+        },
+        {
+            "title": "D. Transfer Admission",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 10,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1085.0,
+                0.0
+            ]
+        },
+        {
+            "title": "E. Academic Offerings-Policies",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 13,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1131.0,
+                0.0
+            ]
+        },
+        {
+            "title": "F. Student Life",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 14,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1029.0,
+                0.0
+            ]
+        },
+        {
+            "title": "G. Annual Expenses",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 16,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1100.0,
+                0.0
+            ]
+        },
+        {
+            "title": "H. Financial Aid",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 18,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1131.0,
+                0.0
+            ]
+        },
+        {
+            "title": "I. Instructional Faculty-Class",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 25,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1200.0,
+                0.0
+            ]
+        },
+        {
+            "title": "J. Degrees Conferred",
+            "level": 0,
+            "is_closed": null,
+            "n_kids": 0,
+            "page_index": 27,
+            "view_mode": "XYZ",
+            "view_pos": [
+                0.0,
+                1056.0,
+                0.0
+            ]
+        }
+    ],
+    "pages": 28,
+    "ocr_stats": {
+        "ocr_pages": 0,
+        "ocr_failed": 0,
+        "ocr_success": 0,
+        "ocr_engine": "none"
+    },
+    "block_stats": {
+        "header_footer": 49,
+        "code": 0,
+        "table": 39,
+        "equations": {
+            "successful_ocr": 5,
+            "unsuccessful_ocr": 2,
+            "equations": 7
+        }
+    },
+    "postprocess_stats": {
+        "edit": {}
+    }
+}
