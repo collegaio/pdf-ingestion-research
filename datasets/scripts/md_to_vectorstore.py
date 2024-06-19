@@ -50,6 +50,8 @@ async def upload_dataset_to_vectorstore(
     pipeline = IngestionPipeline(transformations=[MarkdownNodeParser()])
     nodes = await pipeline.arun(documents=documents)
 
+    # TODO: delete vectors for this dataset_id in the vectorstore index
+
     return VectorStoreIndex(
         nodes=nodes, storage_context=storage_context, embed_model=embed_model
     )

@@ -12,26 +12,26 @@ export const POST = async (
   request: NextRequest,
   { params }: ConversationIDRouteParams,
 ) => {
-  const conversation = await db.conversation.findFirst({
-    where: { id: params.conversationId },
-    include: {
-      messages: true,
+  const messages = await db.message.findMany({
+    where: { conversation_id: params.conversationId },
+    orderBy: {
+      created_at: "asc",
     },
   });
 
-  if (!conversation) {
-    return NextResponse.json(
-      { error: `Conversation ${params.conversationId} not found` },
-      { status: 404 },
-    );
-  }
+  // if (!conversation) {
+  //   return NextResponse.json(
+  //     { error: `Conversation ${params.conversationId} not found` },
+  //     { status: 404 },
+  //   );
+  // }
 
   // TODO: move to service level
   let hasAllNewMessages = false;
   const foundMessages: Message[] = [];
   const history: Message[] = [];
 
-  for (const message of conversation.messages.reverse()) {
+  for (const message of messages.reverse()) {
     if (
       MessageRoles.User === (message.role as MessageRoles) &&
       !hasAllNewMessages

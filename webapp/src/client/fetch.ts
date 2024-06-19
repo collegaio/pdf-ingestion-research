@@ -2,7 +2,7 @@ import axios from "axios";
 
 const createAPIClient = () => {
   return axios.create({
-    timeout: 30_000,
+    timeout: 120_000,
   });
 };
 

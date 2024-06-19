@@ -74,7 +74,7 @@ const ConversationContainer = ({
   }, [messagesResponse]);
 
   const handleSendMessage = async () => {
-    if (!messagesResponse || !message?.trim()) {
+    if (!messagesResponse || isLoadingMessages || !message?.trim()) {
       return;
     }
 

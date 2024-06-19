@@ -14,23 +14,22 @@ export const GET = async (
   request: NextRequest,
   { params }: ConversationIDRouteParams,
 ): Promise<NextResponse<MessagesResponse | ErrorResponse>> => {
-  const conversation = await db.conversation.findFirst({
-    where: { id: params.conversationId },
-    include: { messages: true },
+  const messages = await db.message.findMany({
+    where: { conversation_id: params.conversationId },
     orderBy: {
-      created_at: "desc",
+      created_at: "asc",
     },
   });
 
-  if (!conversation) {
-    return NextResponse.json(
-      { error: `Failed to find conversation with ID ${params.conversationId}` },
-      { status: 404 },
-    );
-  }
+  // if (!conversation) {
+  //   return NextResponse.json(
+  //     { error: `Failed to find conversation with ID ${params.conversationId}` },
+  //     { status: 404 },
+  //   );
+  // }
 
   return NextResponse.json({
-    messages: conversation.messages.map((message) => ({
+    messages: messages.map((message) => ({
       id: message.id,
       text: message.text,
       role: message.role as MessageRoles,

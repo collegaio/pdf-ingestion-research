@@ -4,7 +4,7 @@ import { env } from "~/env";
 const createChatAPIClient = () => {
   return axios.create({
     baseURL: env.CHAT_API_ENDPOINT,
-    timeout: 30_000,
+    timeout: 120_000,
   });
 };
 

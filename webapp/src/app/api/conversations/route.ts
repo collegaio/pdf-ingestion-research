@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ConversationResponse } from "~/models/conversations";
+import { type ConversationResponse } from "~/models/conversations";
 import { db } from "~/server/db";
 
 export const POST = async (): Promise<NextResponse<ConversationResponse>> => {

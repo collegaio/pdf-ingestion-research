@@ -123,4 +123,18 @@ def get_schools(
     ]
 
 
-college_lookup_tool = FunctionTool.from_defaults(fn=get_schools)
+# TODO: convert to function component
+college_lookup_tool = FunctionTool.from_defaults(
+    fn=get_schools,
+    description="Use this to retrieve a list of schools in certain states with the option to filter by school size",
+)
+
+# from llama_index.core.query_pipeline import FnComponent
+
+
+# def add(a: int, b: int) -> int:
+#     """Adds two numbers."""
+#     return a + b
+
+
+# add_component = FnComponent(fn=add, output_key="output")
