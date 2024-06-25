@@ -1,0 +1,5 @@
+{
+  "ignore": [".git", "node_modules", "dist"],
+  "exec": "ts-node index.ts",
+  "ext": "ts"
+}
