@@ -10,7 +10,7 @@ interface ConversationStore {
 
 export const useHomepageConversationStore = create<ConversationStore>()(
   persist(
-    (set, get) => ({
+    (set, _) => ({
       conversationId: undefined,
       setConversationId: (conversationId: string) => set({ conversationId }),
       _hasHydrated: false,
