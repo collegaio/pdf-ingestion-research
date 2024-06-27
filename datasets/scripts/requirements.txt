@@ -1,0 +1,3 @@
+anthropic[bedrock]
+pymupdf
+s3fs
