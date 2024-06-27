@@ -2,7 +2,10 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv("../.env")
+dotenv_path = "../.env"
+
+if os.path.exists(dotenv_path):
+    load_dotenv("../.env")
 
 # Secrets
 COHERE_API_KEY = os.environ["COHERE_API_KEY"]
