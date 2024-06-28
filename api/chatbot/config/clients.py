@@ -21,7 +21,7 @@ pinecone_adapter = PineconeAdapter(api_key=PINECONE_API_KEY)
 
 # TODO: move datasets file over
 # datasets = load_datasets_file("../datasets.json")
-datasets = DatasetsFile(cds_files=[])
+datasets = DatasetsFile(**{"cds-files": []})
 
 # cds_query_tool = create_cds_query_router(
 #     datasets=datasets.cds_files,
