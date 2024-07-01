@@ -7,8 +7,7 @@ await import("./src/env.js");
 /** @type {import("next").NextConfig} */
 const config = {
   transpilePackages: ["@ionic/react", "@ionic/core", "ionicons"],
-  // output: "standalone",
-  output: "export",
+  output: "standalone",
 };
 
 export default config;
