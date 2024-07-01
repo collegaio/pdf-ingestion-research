@@ -1,3 +1,10 @@
 anthropic[bedrock]
 pymupdf
 s3fs
+pinecone-client
+
+# Llamaindex:
+llama-index
+llama-index-vector-stores-pinecone
+llama-index-storage-docstore-dynamodb
+llama-index-embeddings-bedrock

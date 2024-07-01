@@ -4,6 +4,12 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
+    # NOTE: must set PINECONE_API_KEY environment variable
+    pinecone = { 
+      source = "pinecone-io/pinecone"
+      version = "~> 0.7"
+    } 
   }
 
   backend "s3" {

@@ -8,3 +8,8 @@ variable "pdf_to_md_image_tag" {
     type = string
     default = "latest"
 }
+
+variable "md_to_vectorstore_image_tag" {
+    type = string
+    default = "latest"
+}

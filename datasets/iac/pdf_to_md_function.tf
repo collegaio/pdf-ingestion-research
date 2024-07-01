@@ -5,7 +5,7 @@ resource "aws_iam_role" "pdf_to_md_lambda_role" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "basic" {
+resource "aws_iam_role_policy_attachment" "pdf_to_md_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   role       = aws_iam_role.pdf_to_md_lambda_role.name
 }
@@ -15,17 +15,17 @@ resource "aws_cloudwatch_log_group" "pdf_to_md_log_group" {
   retention_in_days = 14
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_logs" {
+resource "aws_iam_role_policy_attachment" "pdf_to_md_lambda_logs" {
   role       = aws_iam_role.pdf_to_md_lambda_role.name
   policy_arn = aws_iam_policy.lambda_logging.arn
 }
 
-resource "aws_iam_role_policy_attachment" "bedrock_access" {
+resource "aws_iam_role_policy_attachment" "pdf_to_md_bedrock_access" {
   role       = aws_iam_role.pdf_to_md_lambda_role.name
   policy_arn = aws_iam_policy.bedrock_access_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "s3_access" {
+resource "aws_iam_role_policy_attachment" "pdf_to_md_s3_access" {
   role       = aws_iam_role.pdf_to_md_lambda_role.name
   policy_arn = aws_iam_policy.s3_access_policy.arn
 }
@@ -45,7 +45,7 @@ resource "aws_lambda_function" "pdf_to_md_lambda" {
   # path.module in the filename.
   function_name = "pdf_to_md_lambda"
   role          = aws_iam_role.pdf_to_md_lambda_role.arn
-  timeout       = 600
+  timeout       = 900
 
   # TODO: try with arm64
   architectures = ["x86_64"]
@@ -65,8 +65,8 @@ resource "aws_lambda_function" "pdf_to_md_lambda" {
 }
 
 resource "aws_lambda_function_event_invoke_config" "pdf_to_md_lambda" {
-  function_name                = aws_lambda_function.pdf_to_md_lambda.function_name
-  maximum_retry_attempts       = 0
+  function_name          = aws_lambda_function.pdf_to_md_lambda.function_name
+  maximum_retry_attempts = 0
 }
 
 resource "aws_s3_bucket" "input_pdfs" {
@@ -83,7 +83,7 @@ resource "aws_s3_bucket_notification" "cds_upload_trigger" {
   }
 }
 
-resource "aws_lambda_permission" "test" {
+resource "aws_lambda_permission" "invoke_pdf_to_md" {
   statement_id  = "AllowS3Invoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.pdf_to_md_lambda.arn

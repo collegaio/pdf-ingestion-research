@@ -6,3 +6,12 @@ resource "aws_ecr_repository" "pdf_to_md" {
     scan_on_push = true
   }
 }
+
+resource "aws_ecr_repository" "md_to_vectorstore" {
+  name                 = "md-to-vectorstore"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}

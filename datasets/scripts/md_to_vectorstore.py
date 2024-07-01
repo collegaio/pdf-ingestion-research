@@ -1,103 +1,122 @@
 import asyncio
 import json
 import os
-from typing import List
-import dotenv
+import tempfile
 
-from pinecone import Pinecone, ServerlessSpec
+# from typing import List
+from typing import Optional
+from urllib.parse import unquote_plus
+
+# import dotenv
+
+from pinecone import Pinecone
 
 from llama_index.core import VectorStoreIndex, StorageContext, SimpleDirectoryReader
-from llama_index.core.schema import BaseNode
+from llama_index.core.ingestion.pipeline import DocstoreStrategy
+
+# from llama_index.core import SimpleDirectoryReader
+
+# from llama_index.core.schema import BaseNode
 from llama_index.core.embeddings import BaseEmbedding
-from llama_index.core.llms import LLM
-from llama_index.core.vector_stores import SimpleVectorStore
-from llama_index.core.node_parser import MarkdownNodeParser, MarkdownElementNodeParser
+
+# from llama_index.core.llms import LLM
+from llama_index.core.vector_stores.types import BasePydanticVectorStore
+from llama_index.core.storage.docstore.keyval_docstore import KVDocumentStore
+
+# from llama_index.core.node_parser import MarkdownNodeParser, MarkdownElementNodeParser
+from llama_index.core.node_parser import MarkdownNodeParser
+
 from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.vector_stores.pinecone import PineconeVectorStore
-from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
-from llama_index.llms.openai import OpenAI
+from llama_index.storage.docstore.dynamodb import DynamoDBDocumentStore
+from llama_index.embeddings.bedrock import BedrockEmbedding
+import s3fs
 
 from dataset_tools.cds.models import CDSDataset
 
-dotenv.load_dotenv("../.env")
+# dotenv.load_dotenv("../.env")
 
-
-openai_api_key = os.environ["OPENAI_API_KEY"]
 pinecone_api_key = os.environ["PINECONE_API_KEY"]
 
-pinecone_index_name = "cds-index-test"
+index_name = "collega-datasets"
+
+EMBED_MODEL: Optional[BaseEmbedding] = None
+DOCSTORE: Optional[KVDocumentStore] = None
+VECTORSTORE: Optional[BasePydanticVectorStore] = None
+
+
+def setup():
+    pc = Pinecone(api_key=pinecone_api_key)
+    pc_index = pc.Index(index_name)
+
+    global VECTORSTORE
+    global DOCSTORE
+    global EMBED_MODEL
+
+    VECTORSTORE = PineconeVectorStore(pc_index)
+    DOCSTORE = DynamoDBDocumentStore.from_table_name(table_name=index_name)
+    # DOCSTORE = SimpleDocumentStore()
+    EMBED_MODEL = BedrockEmbedding(model_name="cohere.embed-english-v3")
 
 
 async def upload_dataset_to_vectorstore(
-    input_dir,
-    dataset: CDSDataset,
-    storage_context: StorageContext,
-    embed_model: BaseEmbedding,
+    input_file: str,
 ):
+    dataset_id = os.path.splitext(os.path.basename(input_file))[0]
     reader = SimpleDirectoryReader(
-        input_files=[os.path.join(input_dir, f"{dataset.id}.md")],
+        input_files=[input_file],
     )
 
     documents = await reader.aload_data()
 
-    for document in documents:
+    for idx, document in enumerate(documents):
+        # print("document:", document.doc_id)
+        print("hash:", document.hash)
         # TODO: parser for XLSX format (it is just gibberish)
-        document.doc_id = dataset.id
-        document.metadata["dataset_id"] = dataset.id
-        document.metadata["dataset_group"] = "cds-data"
+        document.doc_id = f"{dataset_id}-{idx}"
+        document.metadata["dataset_id"] = dataset_id
+        # TODO: get dataset group from folder structure
+        document.metadata["dataset_group"] = "cds-files"
 
-    pipeline = IngestionPipeline(transformations=[MarkdownNodeParser()])
-    nodes = await pipeline.arun(documents=documents)
-
-    # TODO: delete vectors for this dataset_id in the vectorstore index
-
-    return VectorStoreIndex(
-        nodes=nodes, storage_context=storage_context, embed_model=embed_model
+    pipeline = IngestionPipeline(
+        transformations=[MarkdownNodeParser(), EMBED_MODEL],
+        docstore=DOCSTORE,
+        vector_store=VECTORSTORE,
+        docstore_strategy=DocstoreStrategy.DUPLICATES_ONLY,
     )
+
+    # await pipeline.arun(documents=documents)
+    pipeline.run(documents=documents)
+    # nodes = await pipeline.arun(documents=documents)
+    # nodes = pipeline.run(documents=documents)
+
+    # return VectorStoreIndex(
+    #     nodes=nodes, storage_context=storage_context, embed_model=embed_model
+    # )
 
 
 async def main():
-    pc = Pinecone(api_key=pinecone_api_key)
-    print("existing indexes:", pc.list_indexes())
+    setup()
+    # print("existing indexes:", pc.list_indexes())
 
-    if pinecone_index_name in (index["name"] for index in pc.list_indexes()):
-        pc_index = pc.Index(pinecone_index_name)
-
-        # if pc_index.describe_index_stats()['total_vector_count'] > 0:
-        #     pc_index.delete(ids=[vector_id for vector_id in pc_index.list()], namespace="")
-    else:
-        pc.create_index(
-            name=pinecone_index_name,
-            dimension=3072,  # Replace with your model dimensions
-            metric="cosine",  # Replace with your model metric
-            spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-        )
-
-        pc_index = pc.Index(pinecone_index_name)
-
-    pinecone_vector_store = PineconeVectorStore(pc_index)
+    # NOTE: to create index:
+    # pc.create_index(
+    #     name=pinecone_index_name,
+    #     dimension=3072,  # Replace with your model dimensions
+    #     metric="cosine",  # Replace with your model metric
+    #     spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+    # )
 
     # load nodes from MD files
     # TODO: skip missing MD files + warning message
     with open("../../datasets.json", "r") as fp:
         datasets = [CDSDataset(**doc) for doc in json.load(fp)["cds-files"]]
 
-    storage_context = StorageContext.from_defaults(
-        vector_store=pinecone_vector_store, docstore=SimpleDocumentStore()
-    )
-
-    embed_model = OpenAIEmbedding(
-        api_key=openai_api_key, model=OpenAIEmbeddingModelType.TEXT_EMBED_3_LARGE
-    )
-
     await asyncio.gather(
         *(
             upload_dataset_to_vectorstore(
-                input_dir="../cds/md",
-                dataset=dataset,
-                storage_context=storage_context,
-                embed_model=embed_model,
+                input_file=os.path.join("../cds/md", f"{dataset.id}.md"),
             )
             # for dataset in datasets
             for dataset in datasets
@@ -108,6 +127,34 @@ async def main():
     #     print(node.get_type())
     #     print(node.text)
     #     print(node.relationships)
+
+
+async def s3_transform_file(input_file: str):
+    fs = s3fs.S3FileSystem()
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        fs.get(input_file, tempdir)
+
+        await upload_dataset_to_vectorstore(
+            input_file=os.path.join(tempdir, os.path.basename(input_file)),
+            # docstore=DOCSTORE,
+            # vector_store=VECTOR_STORE,
+        )
+
+
+def lambda_handler(event, context):
+    setup()
+
+    try:
+        bucket = filename = event["Records"][0]["s3"]["bucket"]["name"]
+        filename = event["Records"][0]["s3"]["object"]["key"]
+
+        filepath = os.path.join("s3://", bucket, unquote_plus(filename))
+        print(f"processing file: {filepath}")
+
+        asyncio.run(s3_transform_file(filepath))
+    except Exception as e:
+        print("Exception occured while processing PDF:", e)
 
 
 if __name__ == "__main__":
