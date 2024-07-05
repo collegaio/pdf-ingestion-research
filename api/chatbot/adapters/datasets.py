@@ -47,9 +47,13 @@ def load_dataset(
 
 
 def load_datasets(config: DatasetsConfig) -> List[Datapoint]:
+    session = aiobotocore.session.AioSession()
+    print(env.S3_ACCESS_KEY_ID)
+    print(env.S3_SECRET_ACCESS_KEY)
     fs = s3fs.S3FileSystem(
         key=env.S3_ACCESS_KEY_ID,
         secret=env.S3_SECRET_ACCESS_KEY,
+        session=session,
     )
     all_datasets = []
 
