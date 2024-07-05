@@ -1,17 +1,27 @@
+import os
+
 from llama_index.llms.openai import OpenAI
 from llama_index.core.indices import VectorStoreIndex
 from llama_index.core.objects import ObjectIndex
 from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
 from llama_index.llms.cohere import Cohere
+from llama_index.embeddings.cohere import CohereEmbedding
+import s3fs
 
-from chatbot.chat.models import CDSDataset
+from chatbot.chat.models import Datapoint
 from chatbot.adapters.pinecone import PineconeAdapter
-from chatbot.adapters.datasets import DatasetsFile, load_datasets_file
+from chatbot.adapters.datasets import (
+    DatasetsConfig,
+    load_datasets,
+)
 from chatbot.adapters.cohere import CohereChatAdapter
 from chatbot.config.env import COHERE_API_KEY, OPENAI_API_KEY, PINECONE_API_KEY
 
 
 cohere_llm = Cohere(model="command-r-plus", api_key=COHERE_API_KEY)
+cohere_embedding_model = CohereEmbedding(
+    model_name="embed-english-v3.0", cohere_api_key=COHERE_API_KEY
+)
 gpt_llm = OpenAI(api_key=OPENAI_API_KEY, model="gpt-4-turbo")
 gpt_embedding_model = OpenAIEmbedding(
     api_key=OPENAI_API_KEY, model=OpenAIEmbeddingModelType.TEXT_EMBED_3_LARGE
@@ -19,9 +29,12 @@ gpt_embedding_model = OpenAIEmbedding(
 pinecone_adapter = PineconeAdapter(api_key=PINECONE_API_KEY)
 
 
-# TODO: move datasets file over
-# datasets = load_datasets_file("../datasets.json")
-datasets = DatasetsFile(**{"cds-files": []})
+dataset_config = DatasetsConfig(
+    **{"datasets": {"cds-files": {"properties": {"description": "Admissions data"}}}}
+)
+
+datasets = load_datasets(dataset_config)
+
 
 # cds_query_tool = create_cds_query_router(
 #     datasets=datasets.cds_files,

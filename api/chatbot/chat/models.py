@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
 
-class CDSDataset(BaseModel):
+class Datapoint(BaseModel):
     id: str
-    filename: str
     description: str

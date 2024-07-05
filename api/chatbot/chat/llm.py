@@ -5,22 +5,23 @@ from urllib import response
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core.tools import QueryEngineTool, FunctionTool
 from llama_index.core.chat_engine import CondensePlusContextChatEngine, SimpleChatEngine
+from llama_index.core.agent import AgentRunner, ReActAgent
 
-from chatbot.chat.query_engine import create_cds_retriever
+from chatbot.chat.query_engine import create_dataset_retriever
 from chatbot.adapters import college_scorecard
 from chatbot.config import clients
 from chatbot.chat.agent import create_chat_agent, create_chat_agent_query_pipeline
-from chatbot.chat.models import CDSDataset
+from chatbot.chat.models import Datapoint
 from chatbot.server.conversations.model import ChatHistoryMessage
 from chatbot.chat.ports import ChatMessageHandler
 from chatbot.pipelines.chances import create_chances_query_chain
 
 
-cds_retriever = create_cds_retriever(
-    datasets=clients.datasets.cds_files,
+cds_retriever = create_dataset_retriever(
+    datasets=clients.datasets,
     llm=clients.gpt_llm,
     index=clients.pinecone_adapter.get_index(
-        "cds-index-test", embed_model=clients.gpt_embedding_model
+        "collega-datasets", embed_model=clients.cohere_embedding_model
     ),
 )
 
@@ -102,16 +103,24 @@ async def handle_message(
     Always give an answer even if the supporting context is not relevant.
     """
 
-    chat_agent = SimpleChatEngine.from_defaults(
+    # chat_agent = SimpleChatEngine.from_defaults(
+    #     llm=clients.cohere_llm,
+    #     system_prompt=system_prompt,
+    #     chat_history=[
+    #         ChatMessage.from_str(
+    #             msg.text,
+    #             role=str(msg.role.value).lower(),
+    #         )
+    #         for msg in chat_history
+    #     ],
+    # )
+
+    chat_agent = ReActAgent.from_tools(
+        context=system_prompt,
+        tools=[cds_retriever],
         llm=clients.cohere_llm,
-        system_prompt=system_prompt,
-        chat_history=[
-            ChatMessage.from_str(
-                msg.text,
-                role=str(msg.role.value).lower(),
-            )
-            for msg in chat_history
-        ],
+        verbose=True,
+        max_iterations=20,
     )
 
     # chat_agent = CondensePlusContextChatEngine.from_defaults(
@@ -122,7 +131,7 @@ async def handle_message(
     #     chat_history=[
     #         ChatMessage.from_str(
     #             msg.text,
-    #             role=msg.role,
+    #             role=str(msg.role.value).lower(),
     #         )
     #         for msg in chat_history
     #     ],
