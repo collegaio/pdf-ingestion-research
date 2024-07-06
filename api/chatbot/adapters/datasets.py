@@ -2,9 +2,9 @@ import json
 from typing import Dict, List
 import os
 
-import aiobotocore.session
+# import aiobotocore.session
+import botocore.session
 from pydantic import BaseModel, Field
-import aiobotocore
 import s3fs
 
 from chatbot.config import env
@@ -47,7 +47,7 @@ def load_dataset(
 
 
 def load_datasets(config: DatasetsConfig) -> List[Datapoint]:
-    session = aiobotocore.session.AioSession()
+    session = botocore.session.get_session()
 
     client = session.create_client(
         "sts",
