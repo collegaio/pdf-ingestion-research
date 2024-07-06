@@ -52,6 +52,7 @@ def load_datasets(config: DatasetsConfig) -> List[Datapoint]:
 
     client = session.create_client(
         "sts",
+        region_name="us-east-1",
         # aws_access_key_id=env.S3_ACCESS_KEY_ID,
         # aws_secret_access_key=env.S3_SECRET_ACCESS_KEY,
     )
