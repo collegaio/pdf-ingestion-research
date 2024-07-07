@@ -5,19 +5,22 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
 
-ENV VITE_APP_BACKEND_URL=https://communist-loise-collega-b748a8e9.koyeb.app
-
 RUN npm ci
 
 COPY . .
 
+ENV NODE_ENV=production
 RUN npm run build
-
-FROM nginx:latest as runner
-
-COPY --from=base /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
+RUN npm install -g serve
 
 EXPOSE 5173/tcp
+CMD [ "serve", "-p", "5173", "-s", "dist" ]
 
-CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
+# FROM nginx:latest as runner
+
+# COPY --from=base /app/dist /usr/share/nginx/html
+# COPY nginx.conf /etc/nginx/nginx.conf
+
+# EXPOSE 5173/tcp
+
+# CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
