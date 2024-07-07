@@ -5,6 +5,8 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
 
+ENV VITE_APP_BACKEND_URL=https://communist-loise-collega-b748a8e9.koyeb.app
+
 RUN npm ci
 
 COPY . .
