@@ -48,20 +48,20 @@ def load_dataset(
 
 
 def load_datasets(config: DatasetsConfig) -> List[Datapoint]:
-    session = botocore.session.get_session()
+    # session = botocore.session.get_session()
 
-    client = session.create_client(
-        "sts",
-        region_name="us-east-1",
-        # aws_access_key_id=env.S3_ACCESS_KEY_ID,
-        # aws_secret_access_key=env.S3_SECRET_ACCESS_KEY,
-    )
+    # client = session.create_client(
+    #     "sts",
+    #     # region_name="us-east-1",
+    #     # aws_access_key_id=env.S3_ACCESS_KEY_ID,
+    #     # aws_secret_access_key=env.S3_SECRET_ACCESS_KEY,
+    # )
 
-    credentials = client.get_session_token()["Credentials"]
+    # credentials = client.get_session_token()["Credentials"]
     # print(env.S3_ACCESS_KEY_ID)
     # print(env.S3_SECRET_ACCESS_KEY)
-    # fs = s3fs.S3FileSystem()
-    fs = s3fs.S3FileSystem(token=credentials["SessionToken"])
+    fs = s3fs.S3FileSystem()
+    # fs = s3fs.S3FileSystem(token=credentials["SessionToken"])
     all_datasets = []
 
     for key in config.datasets:
