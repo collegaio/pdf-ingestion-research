@@ -1,6 +1,5 @@
 // NOTE: these must be specified at build time
-console.log(import.meta.env.VITE_SOME_KEY);
-console.log(process.env.VITE_APP_BACKEND_URL);
+console.log("mode:", import.meta.env.MODE);
 
 const mode = import.meta.env.MODE;
 
