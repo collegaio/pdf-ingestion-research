@@ -1,8 +1,9 @@
 import axios from "axios";
+import { BACKEND_URL } from "../config/env";
 
 const createAPIClient = () => {
   return axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: BACKEND_URL,
     timeout: 120_000,
   });
 };
