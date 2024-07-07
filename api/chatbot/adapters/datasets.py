@@ -58,9 +58,12 @@ def load_datasets(config: DatasetsConfig) -> List[Datapoint]:
     # )
 
     # credentials = client.get_session_token()["Credentials"]
-    # print(env.S3_ACCESS_KEY_ID)
-    # print(env.S3_SECRET_ACCESS_KEY)
-    fs = s3fs.S3FileSystem()
+    # print(env.AWS_ACCESS_KEY_ID)
+    # print(env.AWS_SECRET_ACCESS_KEY)
+    fs = s3fs.S3FileSystem(
+        key=env.AWS_ACCESS_KEY_ID,
+        secret=env.AWS_SECRET_ACCESS_KEY,
+    )
     # fs = s3fs.S3FileSystem(token=credentials["SessionToken"])
     all_datasets = []
 
