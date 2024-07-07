@@ -137,6 +137,6 @@ async def handle_message(
     #     ],
     # )
 
-    result = await chat_agent.achat(message)
+    result = chat_agent.chat(message)
 
     return result.response
