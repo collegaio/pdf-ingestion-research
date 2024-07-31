@@ -34,75 +34,88 @@ from dataset_tools.cds.models import CDSDataset
 client = AsyncAnthropicBedrock()
 
 datasets_bucket = os.getenv("DATASETS_BUCKET", "s3://collega-datasets-533267152364")
+sem = asyncio.Semaphore(20)
+
+
+async def convert_pdf_page_markdown(page: pymupdf.Page):
+    pix = page.get_pixmap()  # render page to an image
+    # pix.save(os.path.join(tempdir, "page-%i.png" % page.number))  # store image as a PNG
+    encoded_string = base64.b64encode(pix.tobytes())
+    # print(encoded_string)
+
+    prompt = """
+    Convert this image of a page from a PDF into markdown.
+    Convert the tables to valid markdown tables.
+    If there is an image or figure, replace it with an alternative text description.
+    Return the formatted markdown in a block starting with "<MARKDOWN>" and ending with "</MARKDOWN>"
+    """
+
+    async with sem:
+        message = await client.messages.create(
+            model="anthropic.claude-3-5-sonnet-20240620-v1:0",
+            # model="anthropic.claude-3-haiku-20240307-v1:0",
+            max_tokens=2048,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": encoded_string.decode("utf-8"),
+                            },
+                        },
+                        {"type": "text", "text": prompt},
+                    ],
+                }
+            ],
+        )
+
+        content = message.content
+
+    if content != [] and content[0].type == "text":
+        text = content[0].text
+        # print("before:", text)
+
+        sub1 = "<MARKDOWN>"
+        sub2 = "</MARKDOWN>"
+
+        idx1 = 0
+        idx2 = len(text)
+
+        try:
+            idx1 = text.index(sub1)
+        except ValueError:
+            pass
+
+        try:
+            idx2 = text.index(sub2)
+        except ValueError:
+            pass
+
+        # length of substring 1 is added to
+        # get string from next character
+        res = text[idx1 + len(sub1) + 1 : idx2]
+
+        print("after:", res)
+        return res
+    else:
+        return None
 
 
 async def convert_markdown(input_file_path: str, output_file_path: str):
+    doc = pymupdf.open(input_file_path)
+
+    markdown_pages = await asyncio.gather(
+        *(convert_pdf_page_markdown(page) for page in doc)
+    )
+
+    # TODO: can write directly to S3
     with open(output_file_path, "w") as fp:
-        doc = pymupdf.open(input_file_path)
-
-        for page in doc:  # iterate through the pages
-            pix = page.get_pixmap()  # render page to an image
-            # pix.save(os.path.join(tempdir, "page-%i.png" % page.number))  # store image as a PNG
-            encoded_string = base64.b64encode(pix.tobytes())
-            # print(encoded_string)
-
-            prompt = """
-            Convert this image of a page from a PDF into markdown.
-            Convert the tables to valid markdown tables.
-            If there is an image or figure, replace it with an alternative text description.
-            Return the formatted markdown in a block starting with "<MARKDOWN>" and ending with "</MARKDOWN>"
-            """
-
-            message = await client.messages.create(
-                model="anthropic.claude-3-5-sonnet-20240620-v1:0",
-                # model="anthropic.claude-3-haiku-20240307-v1:0",
-                max_tokens=2048,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": "image/png",
-                                    "data": encoded_string.decode("utf-8"),
-                                },
-                            },
-                            {"type": "text", "text": prompt},
-                        ],
-                    }
-                ],
-            )
-
-            content = message.content
-
-            if content != [] and content[0].type == "text":
-                text = content[0].text
-                print("before:", text)
-
-                sub1 = "<MARKDOWN>"
-                sub2 = "</MARKDOWN>"
-
-                idx1 = 0
-                idx2 = len(text)
-                # print(text)
-                try:
-                    idx1 = text.index(sub1)
-                except ValueError:
-                    pass
-
-                try:
-                    idx2 = text.index(sub2)
-                except ValueError:
-                    pass
-
-                # length of substring 1 is added to
-                # get string from next character
-                res = text[idx1 + len(sub1) + 1 : idx2]
-
-                print("after:", res)
-                fp.write(res)
+        for page in markdown_pages:
+            fp.write(page)
 
 
 # async def parse_and_save_document(input_dir: str, output_dir: str, dataset: CDSDataset):

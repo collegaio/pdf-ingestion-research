@@ -52,8 +52,8 @@ We invite you to indicate if there are items on the CDS for which you cannot use
 
 ## A2 Source of institutional control (Check only one):
 
-- [ ] Public
-- [x] Private (nonprofit)
+- [x] Public
+- [ ] Private (nonprofit)
 - [ ] Proprietary
 
 ## A3 Classify your undergraduate institution:

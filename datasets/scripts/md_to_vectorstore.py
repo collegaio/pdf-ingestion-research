@@ -62,6 +62,7 @@ def setup():
 
 async def upload_dataset_to_vectorstore(
     input_file: str,
+    dataset_group: Optional[str] = None,
 ):
     dataset_id = os.path.splitext(os.path.basename(input_file))[0]
     reader = SimpleDirectoryReader(
@@ -76,8 +77,9 @@ async def upload_dataset_to_vectorstore(
         # TODO: parser for XLSX format (it is just gibberish)
         document.doc_id = f"{dataset_id}-{idx}"
         document.metadata["dataset_id"] = dataset_id
-        # TODO: get dataset group from folder structure
-        document.metadata["dataset_group"] = "cds-files"
+
+        if dataset_group is not None:
+            document.metadata["dataset_group"] = dataset_group
 
     pipeline = IngestionPipeline(
         transformations=[MarkdownNodeParser(), EMBED_MODEL],
@@ -117,6 +119,7 @@ async def main():
         *(
             upload_dataset_to_vectorstore(
                 input_file=os.path.join("../cds/md", f"{dataset.id}.md"),
+                dataset_group="cds-files",
             )
             # for dataset in datasets
             for dataset in datasets
@@ -129,7 +132,7 @@ async def main():
     #     print(node.relationships)
 
 
-async def s3_transform_file(input_file: str):
+async def s3_transform_file(input_file: str, dataset_group: str):
     fs = s3fs.S3FileSystem()
 
     with tempfile.TemporaryDirectory() as tempdir:
@@ -137,6 +140,7 @@ async def s3_transform_file(input_file: str):
 
         await upload_dataset_to_vectorstore(
             input_file=os.path.join(tempdir, os.path.basename(input_file)),
+            dataset_group=dataset_group,
             # docstore=DOCSTORE,
             # vector_store=VECTOR_STORE,
         )
@@ -152,7 +156,12 @@ def lambda_handler(event, context):
         filepath = os.path.join("s3://", bucket, unquote_plus(filename))
         print(f"processing file: {filepath}")
 
-        asyncio.run(s3_transform_file(filepath))
+        asyncio.run(
+            s3_transform_file(
+                input_file=filepath,
+                dataset_group=os.path.basename(unquote_plus(filename)),
+            )
+        )
     except Exception as e:
         print("Exception occured while processing PDF:", e)
 

@@ -49,6 +49,7 @@ resource "aws_lambda_function" "pdf_to_md_lambda" {
 
   # TODO: try with arm64
   architectures = ["x86_64"]
+  memory_size   = 512
   package_type  = "Image"
   # runtime = "python3.11"
   image_uri = data.aws_ecr_image.pdf_to_md_image.image_uri

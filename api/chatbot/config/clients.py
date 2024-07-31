@@ -30,7 +30,14 @@ pinecone_adapter = PineconeAdapter(api_key=PINECONE_API_KEY)
 
 
 dataset_config = DatasetsConfig(
-    **{"datasets": {"cds-files": {"properties": {"description": "Admissions data"}}}}
+    **{
+        "datasets": {
+            "cds-files": {"properties": {"description": "Admissions data"}},
+            "training_data": {
+                "properties": {"description": "Guides for applying to college"}
+            },
+        }
+    }
 )
 
 datasets = load_datasets(dataset_config)
