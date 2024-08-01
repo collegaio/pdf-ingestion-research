@@ -34,7 +34,7 @@ from dataset_tools.cds.models import CDSDataset
 client = AsyncAnthropicBedrock()
 
 datasets_bucket = os.getenv("DATASETS_BUCKET", "s3://collega-datasets-533267152364")
-sem = asyncio.Semaphore(20)
+sem = asyncio.Semaphore(4)
 
 
 async def convert_pdf_page_markdown(page: pymupdf.Page):
