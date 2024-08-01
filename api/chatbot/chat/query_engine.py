@@ -73,8 +73,6 @@ def create_dataset_retriever(dataset: Dataset, llm: LLM, index: VectorStoreIndex
         selector=PydanticMultiSelector.from_defaults(llm=llm),
     )
 
-    print("loaded dataset:", dataset)
-
     return QueryEngineTool.from_defaults(
         query_engine=dataset_query_engine,
         name=dataset.name,

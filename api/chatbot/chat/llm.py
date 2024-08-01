@@ -17,7 +17,7 @@ from chatbot.chat.ports import ChatMessageHandler
 from chatbot.pipelines.chances import create_chances_query_chain
 
 
-cds_retriever = load_retrievers(
+retrievers = load_retrievers(
     datasets=clients.datasets,
     llm=clients.gpt_llm,
     index=clients.pinecone_adapter.get_index(
@@ -117,7 +117,7 @@ async def handle_message(
 
     chat_agent = ReActAgent.from_tools(
         context=system_prompt,
-        tools=[cds_retriever],
+        tools=retrievers,
         llm=clients.cohere_llm,
         verbose=True,
         max_iterations=20,

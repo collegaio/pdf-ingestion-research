@@ -36,9 +36,6 @@ def load_dataset(
     properties = dataset.properties
     datapoints = []
 
-    print("md files under current path:", current_path)
-    print(fs.glob(current_path + "/*.md"))
-
     for file in fs.glob(current_path + "/*.md"):
         datapoint_id = os.path.basename(os.path.splitext(file)[0])
 
