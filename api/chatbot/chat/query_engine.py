@@ -76,8 +76,6 @@ def create_dataset_retriever(dataset: Dataset, llm: LLM, index: VectorStoreIndex
     return QueryEngineTool.from_defaults(
         query_engine=dataset_query_engine,
         name=dataset.name,
-        # name="cds-query-engine"
-        # description="Answers questions about admissions data from 2023 onward such as GPA, standardized test scores, demographic data, and financial aid award sizes",
         description=dataset.description,
     )
 
