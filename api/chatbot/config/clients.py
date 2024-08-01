@@ -32,9 +32,17 @@ pinecone_adapter = PineconeAdapter(api_key=PINECONE_API_KEY)
 dataset_config = DatasetsConfig(
     **{
         "datasets": {
-            "cds-files": {"properties": {"description": "Admissions data"}},
-            "training_data": {
-                "properties": {"description": "Guides for applying to college"}
+            "cds-files": {
+                "properties": {
+                    "description": "Answers questions about admissions data from 2023 onward such as GPA, standardized test scores, demographic data, and financial aid award sizes",
+                    "datapoint_prefix": "Admissions data for ",
+                }
+            },
+            "training_info": {
+                "properties": {
+                    "description": "Guides for applying to college",
+                    "datapoint_prefix": "",
+                }
             },
         }
     }

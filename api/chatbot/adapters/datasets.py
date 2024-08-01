@@ -1,6 +1,6 @@
 import json
 from re import T
-from typing import Dict, List
+from typing import Dict, List, Optional
 import os
 
 # import aiobotocore.session
@@ -9,15 +9,17 @@ from pydantic import BaseModel, Field
 import s3fs
 
 from chatbot.config import env
-from chatbot.chat.models import Datapoint
+from chatbot.chat.models import Datapoint, Dataset
 
 
 class DatasetProperties(BaseModel):
     description: str
+    datapoint_prefix: str
 
 
 class DatasetConfig(BaseModel):
     properties: DatasetProperties
+    datasets: Optional[Dict[str, "DatasetsConfig"]] = None
 
 
 class DatasetsConfig(BaseModel):
@@ -26,7 +28,7 @@ class DatasetsConfig(BaseModel):
 
 def load_dataset(
     fs: s3fs.S3FileSystem, current_path: str, dataset: DatasetConfig
-) -> List[Datapoint]:
+) -> Dataset:
     # if "datasets" in dataset:
     #     for sub_dataset in dataset["datasets"]:
     #         load_dataset(fs, os.path.join(current_path, sub_dataset), dataset["datasets"][sub_dataset])
@@ -34,20 +36,41 @@ def load_dataset(
     properties = dataset.properties
     datapoints = []
 
+    print("md files under current path:", current_path)
+    print(fs.glob(current_path + "/*.md"))
+
     for file in fs.glob(current_path + "/*.md"):
         datapoint_id = os.path.basename(os.path.splitext(file)[0])
 
         datapoint = Datapoint(
             id=datapoint_id,
-            description=f"{properties.description} for {datapoint_id}",
+            description=f"{properties.datapoint_prefix}{datapoint_id}",
         )
 
         datapoints.append(datapoint)
 
-    return datapoints
+    nested_datasets = []
+
+    if dataset.datasets is not None:
+        for nested_dataset in dataset.datasets:
+            nested_dataset = load_dataset(
+                fs,
+                os.path.join(current_path, nested_dataset),
+                dataset.datasets[nested_dataset],
+            )
+
+            nested_datasets.append(nested_dataset)
+
+    return Dataset(
+        id=current_path,
+        name=os.path.basename(current_path),
+        description=dataset.properties.description,
+        datapoints=datapoints,
+        datasets=nested_datasets,
+    )
 
 
-def load_datasets(config: DatasetsConfig) -> List[Datapoint]:
+def load_datasets(config: DatasetsConfig) -> List[Dataset]:
     # session = botocore.session.get_session()
 
     # client = session.create_client(
@@ -65,16 +88,15 @@ def load_datasets(config: DatasetsConfig) -> List[Datapoint]:
         secret=env.AWS_SECRET_ACCESS_KEY,
     )
     # fs = s3fs.S3FileSystem(token=credentials["SessionToken"])
-    all_datasets = []
+    datasets = []
 
     for key in config.datasets:
-        # TODO: get bucket from config
-        # TODO: set s3 creds in config
-        datasets = load_dataset(
+        dataset = load_dataset(
             fs,
             os.path.join(env.DATASETS_BUCKET, key),
             config.datasets[key],
         )
-        all_datasets.extend(datasets)
 
-    return all_datasets
+        datasets.append(dataset)
+
+    return datasets

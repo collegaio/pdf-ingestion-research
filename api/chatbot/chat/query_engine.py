@@ -13,24 +13,33 @@ from llama_index.core.vector_stores import (
     FilterOperator,
 )
 
-from chatbot.chat.models import Datapoint
+from chatbot.chat.models import Dataset
 
 
-def create_dataset_retriever(
-    datasets: List[Datapoint], llm: LLM, index: VectorStoreIndex
-):
-    retriever_tools = []
+def load_retrievers(datasets: List[Dataset], llm: LLM, index: VectorStoreIndex):
+    retrievers = []
 
     for dataset in datasets:
+        retriever = create_dataset_retriever(dataset=dataset, llm=llm, index=index)
+
+        retrievers.append(retriever)
+
+    return retrievers
+
+
+def create_dataset_retriever(dataset: Dataset, llm: LLM, index: VectorStoreIndex):
+    retriever_tools = []
+
+    for datapoint in dataset.datapoints:
         query_engine = get_dataset_retriever(
-            dataset_id=dataset.id, llm=llm, index=index
+            dataset_id=datapoint.id, llm=llm, index=index
         )
 
         tool = QueryEngineTool(
             query_engine=query_engine,
             metadata=ToolMetadata(
-                name=dataset.id,
-                description=(dataset.description),
+                name=datapoint.id,
+                description=(datapoint.description),
             ),
         )
         # tool = RetrieverTool(
@@ -40,6 +49,11 @@ def create_dataset_retriever(
         #         description=(dataset.description),
         #     ),
         # )
+
+        retriever_tools.append(tool)
+
+    for nested_dataset in dataset.datasets:
+        tool = create_dataset_retriever(nested_dataset, llm=llm, index=index)
 
         retriever_tools.append(tool)
 
@@ -53,16 +67,20 @@ def create_dataset_retriever(
     #     retriever_tools=retriever_tools,
     #     verbose=True,
     # )
-    cds_query_engine = RouterQueryEngine.from_defaults(
+    dataset_query_engine = RouterQueryEngine.from_defaults(
         query_engine_tools=retriever_tools,
         llm=llm,
         selector=PydanticMultiSelector.from_defaults(llm=llm),
     )
 
+    print("loaded dataset:", dataset)
+
     return QueryEngineTool.from_defaults(
-        query_engine=cds_query_engine,
-        name="cds_query_engine",
-        description="Answers questions about admissions data from 2023 onward such as GPA, standardized test scores, demographic data, and financial aid award sizes",
+        query_engine=dataset_query_engine,
+        name=dataset.name,
+        # name="cds-query-engine"
+        # description="Answers questions about admissions data from 2023 onward such as GPA, standardized test scores, demographic data, and financial aid award sizes",
+        description=dataset.description,
     )
 
 

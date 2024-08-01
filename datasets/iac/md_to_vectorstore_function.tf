@@ -58,7 +58,7 @@ resource "aws_lambda_function" "md_to_vectorstore_lambda" {
   # path.module in the filename.
   function_name = "md_to_vectorstore_lambda"
   role          = aws_iam_role.md_to_vectorstore_lambda_role.arn
-  timeout       = 60
+  timeout       = 300
 
   # TODO: try with arm64
   architectures = ["x86_64"]

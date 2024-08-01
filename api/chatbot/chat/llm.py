@@ -7,7 +7,7 @@ from llama_index.core.tools import QueryEngineTool, FunctionTool
 from llama_index.core.chat_engine import CondensePlusContextChatEngine, SimpleChatEngine
 from llama_index.core.agent import AgentRunner, ReActAgent
 
-from chatbot.chat.query_engine import create_dataset_retriever
+from chatbot.chat.query_engine import create_dataset_retriever, load_retrievers
 from chatbot.adapters import college_scorecard
 from chatbot.config import clients
 from chatbot.chat.agent import create_chat_agent, create_chat_agent_query_pipeline
@@ -17,7 +17,7 @@ from chatbot.chat.ports import ChatMessageHandler
 from chatbot.pipelines.chances import create_chances_query_chain
 
 
-cds_retriever = create_dataset_retriever(
+cds_retriever = load_retrievers(
     datasets=clients.datasets,
     llm=clients.gpt_llm,
     index=clients.pinecone_adapter.get_index(
