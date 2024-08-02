@@ -159,7 +159,7 @@ def lambda_handler(event, context):
         asyncio.run(
             s3_transform_file(
                 input_file=filepath,
-                dataset_group=os.path.basename(unquote_plus(filename)),
+                dataset_group=os.path.dirname(unquote_plus(filename)),
             )
         )
     except Exception as e:
