@@ -34,10 +34,9 @@ from dataset_tools.cds.models import CDSDataset
 client = AsyncAnthropicBedrock()
 
 datasets_bucket = os.getenv("DATASETS_BUCKET", "s3://collega-datasets-533267152364")
-sem = asyncio.Semaphore(4)
 
 
-async def convert_pdf_page_markdown(page: pymupdf.Page):
+async def convert_pdf_page_markdown(page: pymupdf.Page, semaphore: asyncio.Semaphore):
     pix = page.get_pixmap()  # render page to an image
     # pix.save(os.path.join(tempdir, "page-%i.png" % page.number))  # store image as a PNG
     encoded_string = base64.b64encode(pix.tobytes())
@@ -50,7 +49,7 @@ async def convert_pdf_page_markdown(page: pymupdf.Page):
     Return the formatted markdown in a block starting with "<MARKDOWN>" and ending with "</MARKDOWN>"
     """
 
-    async with sem:
+    async with semaphore:
         message = await client.messages.create(
             model="anthropic.claude-3-5-sonnet-20240620-v1:0",
             # model="anthropic.claude-3-haiku-20240307-v1:0",
@@ -107,9 +106,10 @@ async def convert_pdf_page_markdown(page: pymupdf.Page):
 
 async def convert_markdown(input_file_path: str, output_file_path: str):
     doc = pymupdf.open(input_file_path)
+    sem = asyncio.Semaphore(4)
 
     markdown_pages = await asyncio.gather(
-        *(convert_pdf_page_markdown(page) for page in doc)
+        *(convert_pdf_page_markdown(page, sem) for page in doc)
     )
 
     # TODO: can write directly to S3
