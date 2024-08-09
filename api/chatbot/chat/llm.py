@@ -119,6 +119,13 @@ async def handle_message(
         context=system_prompt,
         tools=retrievers,
         llm=clients.cohere_llm,
+        chat_history=[
+            ChatMessage.from_str(
+                msg.text,
+                role=str(msg.role.value).lower(),
+            )
+            for msg in chat_history
+        ],
         verbose=True,
         max_iterations=20,
     )

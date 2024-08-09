@@ -17,6 +17,7 @@
 # # s3_region = "us-west-1"
 # s3_access_key_id = os.environ["S3_ACCESS_KEY_ID"]
 # s3_secret_access_key = os.environ["S3_SECRET_ACCESS_KEY"]
+import random
 from urllib.parse import unquote_plus
 import base64
 import asyncio
@@ -24,7 +25,7 @@ import json
 import os
 import tempfile
 
-from anthropic import AsyncAnthropicBedrock
+from anthropic import AsyncAnthropicBedrock, RateLimitError
 import pymupdf
 import s3fs
 
@@ -50,29 +51,48 @@ async def convert_pdf_page_markdown(page: pymupdf.Page, semaphore: asyncio.Semap
     """
 
     async with semaphore:
-        message = await client.messages.create(
-            model="anthropic.claude-3-5-sonnet-20240620-v1:0",
-            # model="anthropic.claude-3-haiku-20240307-v1:0",
-            max_tokens=2048,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/png",
-                                "data": encoded_string.decode("utf-8"),
-                            },
-                        },
-                        {"type": "text", "text": prompt},
-                    ],
-                }
-            ],
-        )
+        timeout_sec = 1
+        retries_remaining = 5
 
-        content = message.content
+        while retries_remaining >= 0:
+            try:
+                message = await client.messages.create(
+                    model="anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    # model="anthropic.claude-3-haiku-20240307-v1:0",
+                    max_tokens=2048,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "image",
+                                    "source": {
+                                        "type": "base64",
+                                        "media_type": "image/png",
+                                        "data": encoded_string.decode("utf-8"),
+                                    },
+                                },
+                                {"type": "text", "text": prompt},
+                            ],
+                        }
+                    ],
+                )
+
+                content = message.content
+                break
+            except RateLimitError as e:
+                retries_remaining -= 1
+
+                if retries_remaining <= 0:
+                    raise e
+                else:
+                    print(
+                        f"Rate limit hit ({retries_remaining} tries remaining), retrying in {timeout_sec} seconds"
+                    )
+                    await asyncio.sleep(timeout_sec)
+
+                    timeout_sec *= random.randint(2, 4)
+                    continue
 
     if content != [] and content[0].type == "text":
         text = content[0].text
@@ -106,7 +126,7 @@ async def convert_pdf_page_markdown(page: pymupdf.Page, semaphore: asyncio.Semap
 
 async def convert_markdown(input_file_path: str, output_file_path: str):
     doc = pymupdf.open(input_file_path)
-    sem = asyncio.Semaphore(4)
+    sem = asyncio.Semaphore(1)
 
     markdown_pages = await asyncio.gather(
         *(convert_pdf_page_markdown(page, sem) for page in doc)
