@@ -258,7 +258,7 @@ def lambda_handler(event, context):
     # TODO: download from S3
     # TODO: upload to S3
     try:
-        bucket = filename = event["Records"][0]["s3"]["bucket"]["name"]
+        bucket = event["Records"][0]["s3"]["bucket"]["name"]
         filename = event["Records"][0]["s3"]["object"]["key"]
 
         filepath = os.path.join("s3://", bucket, unquote_plus(filename))

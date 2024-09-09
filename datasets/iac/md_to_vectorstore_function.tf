@@ -83,13 +83,14 @@ resource "aws_lambda_function_event_invoke_config" "md_to_vectorstore_lambda" {
 }
 
 resource "aws_s3_bucket_notification" "md_upload_trigger" {
-  bucket = aws_s3_bucket.datasets.bucket
+  bucket      = aws_s3_bucket.datasets.bucket
+  eventbridge = true
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.md_to_vectorstore_lambda.arn
     events              = ["s3:ObjectCreated:*"]
     # filter_prefix       = "cds-files"
-    filter_suffix       = ".md"
+    filter_suffix = ".md"
   }
 }
 

@@ -1,12 +1,114 @@
-from typing import Any
+from typing import Any, List, Literal
 
 from llama_index.core.llms import LLM
 from llama_index.core.program import LLMTextCompletionProgram
 from llama_index.core.indices import VectorStoreIndex
+from llama_index.core import PromptTemplate
 from llama_index.core.vector_stores import (
     MetadataFilter,
     MetadataFilters,
     FilterOperator,
+)
+from pydantic import BaseModel, Field
+
+
+class Column(BaseModel):
+    name: str = Field(description="Column name")
+    datatype: Literal["string", "integer", "number", "boolean"] = Field(
+        description="JSON Datatype of values for column"
+    )
+
+
+def columns_to_schema(columns: List[Column]):
+    return {
+        "title": "Fields",
+        "type": "object",
+        "properties": {
+            column.name: {
+                "title": column.name,
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "anyOf": [{"type": column.datatype}, {"type": "null"}],
+                        "default": None,
+                        "title": "value",
+                    },
+                    "explanation": {"title": "explanation", "type": "string"},
+                },
+            }
+            for column in columns
+        },
+    }
+
+
+EXTRACT_INFO_TEMPLATE = PromptTemplate(
+    template="""
+    Here is some text from a document:
+
+    {text}
+
+    Provide values for following fields using this JSON schema:
+
+    {schema}
+
+    Only output properly formatted JSON.
+    Set the value as null if it can't be inferred from the text.
+    Do not include commas, "$", or "%" in numbers.
+"""
+)
+
+VALUE_VALID_TEMPLATE = PromptTemplate(
+    template="""
+    Here is some text from a document:
+
+    {text}
+
+    Verify that the following key value pair is correct.
+
+    {column_name}: {value}
+
+    Output "TRUE" or "FALSE" and give an explanation.
+    If the text does not contain a value for {column_name} and the value is "None", output "TRUE".
+    If "FALSE", also return properly formatted JSON with the correct value in "key_name: value" format.
+"""
+)
+
+# EXTRACT_KEY_VALUES_TEMPLATE = PromptTemplate(
+#     template="""
+# Represent the following as a dataframe of key,value pairs.
+# Use snake_case for the key names.
+# For dollar ($) or percent (%) values, parse them as a float with the word "dollars" or "percent" in the key name
+# Do not include commas (,) in numeric values, parse them as an int or float.
+# Do not make up pairs or examples that are not in the text.
+
+# {text}
+# """
+# )
+
+EXTRACT_KEY_VALUES_TEMPLATE = PromptTemplate(
+    template="""
+    Here is some text from a document:
+
+    {text}
+
+    Extract key: value pairs from the text as a markdown list.
+
+    The list should be in the following format:
+
+    # Subject
+
+    * key_name: value
+    * key_name: value
+    ...
+
+    Use snake_case for the key names.
+    Key names should be unique in the list. Do not repeat keys.
+    Each value should be a string, int, float, or boolean.
+    For dollar ($) or percent (%) values, parse them as a float with the word "dollars" or "percent" in the key name.
+    If the value is a date, give the date in ISO format as YYYY-MM-DD.
+    Do not create nested lists or as values.
+    Do not make up pairs or examples that are not in the text.
+"""
 )
 
 

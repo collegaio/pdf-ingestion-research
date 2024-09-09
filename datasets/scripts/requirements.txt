@@ -2,9 +2,14 @@ anthropic[bedrock]
 pymupdf
 s3fs
 pinecone-client
+scikit-learn
+polars
 
 # Llamaindex:
-llama-index
-llama-index-vector-stores-pinecone
-llama-index-storage-docstore-dynamodb
-llama-index-embeddings-bedrock
+# llama-index==0.10.*
+llama-index-core==0.10.*
+llama-index-readers-file==0.1.*
+llama-index-vector-stores-pinecone==0.1.*
+llama-index-storage-docstore-dynamodb==0.1.*
+llama-index-embeddings-bedrock==0.2.*
+llama-index-llms-bedrock==0.1.*
