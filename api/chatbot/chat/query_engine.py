@@ -22,6 +22,9 @@ def load_retrievers(datasets: List[Dataset], llm: LLM, index: VectorStoreIndex):
     for dataset in datasets:
         retriever = create_dataset_retriever(dataset=dataset, llm=llm, index=index)
 
+        # out = retriever.call()
+        # out.content
+
         retrievers.append(retriever)
 
     return retrievers

@@ -38,6 +38,7 @@ def load_dataset(
 
     for file in fs.glob(current_path + "/*.md"):
         datapoint_id = os.path.basename(os.path.splitext(file)[0])
+        print("datapoint_id:", datapoint_id)
 
         datapoint = Datapoint(
             id=datapoint_id,

@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 dotenv_path = "../.env"
 
 if os.path.exists(dotenv_path):
+    print("loading dotenv...")
     load_dotenv(dotenv_path)
 
 # Secrets

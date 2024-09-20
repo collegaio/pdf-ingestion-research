@@ -7,6 +7,8 @@ from llama_index.core.tools import QueryEngineTool, FunctionTool
 from llama_index.core.chat_engine import CondensePlusContextChatEngine, SimpleChatEngine
 from llama_index.core.agent import AgentRunner, ReActAgent
 
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+
 from chatbot.chat.query_engine import create_dataset_retriever, load_retrievers
 from chatbot.adapters import college_scorecard
 from chatbot.config import clients
@@ -15,6 +17,7 @@ from chatbot.chat.models import Datapoint
 from chatbot.server.conversations.model import ChatHistoryMessage
 from chatbot.chat.ports import ChatMessageHandler
 from chatbot.pipelines.chances import create_chances_query_chain
+from chatbot.pipelines.chat import app
 
 
 retrievers = load_retrievers(
@@ -73,6 +76,29 @@ retrievers = load_retrievers(
 
 
 async def handle_message(
+    message: str,
+    chat_history: List[ChatHistoryMessage],
+):
+    system_prompt = """
+    You are a high school guidance counselor who is trying to help students.
+    Disuade the student if they are not qualified for what they are asking.
+    Always give an answer even if the supporting context is not relevant.
+    """
+
+    final_state = await app.ainvoke(
+        {
+            "messages": [SystemMessage(content=system_prompt)]
+            + [message.to_langchain_message() for message in chat_history]
+            + [HumanMessage(content=message)]
+        },
+    )
+
+    print("messages:", final_state["messages"])
+    # assert final_state["messages"][-1] is None
+    return final_state["messages"][-1].content
+
+
+async def handle_message_old(
     message: str,
     chat_history: List[ChatHistoryMessage],
 ):
