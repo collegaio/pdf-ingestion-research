@@ -17,6 +17,7 @@ import boto3
 
 # from chatbot.chat.models import Datapoint
 # from chatbot.adapters.pinecone import PineconeAdapter
+from api.chatbot.config import env
 from chatbot.adapters.datasets import (
     DatasetsConfig,
     load_datasets,
@@ -25,7 +26,11 @@ from chatbot.adapters.datasets import (
 # from chatbot.adapters.cohere import CohereChatAdapter
 from chatbot.config.env import COHERE_API_KEY, OPENAI_API_KEY, PINECONE_API_KEY
 
-bedrock_client = boto3.client("bedrock-runtime")
+bedrock_client = boto3.client(
+    "bedrock-runtime",
+    aws_access_key_id=env.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=env.AWS_SECRET_ACCESS_KEY,
+)
 pinecone_client = Pinecone(api_key=PINECONE_API_KEY)
 
 # cohere_llm = Cohere(model="command-r-plus", api_key=COHERE_API_KEY)
