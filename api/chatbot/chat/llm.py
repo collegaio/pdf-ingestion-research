@@ -1,32 +1,34 @@
 from typing import List
-from urllib import response
+
+# from urllib import response
 
 
-from llama_index.core.llms import ChatMessage, MessageRole
-from llama_index.core.tools import QueryEngineTool, FunctionTool
-from llama_index.core.chat_engine import CondensePlusContextChatEngine, SimpleChatEngine
-from llama_index.core.agent import AgentRunner, ReActAgent
+# from llama_index.core.llms import ChatMessage, MessageRole
+# from llama_index.core.tools import QueryEngineTool, FunctionTool
+# from llama_index.core.chat_engine import CondensePlusContextChatEngine, SimpleChatEngine
+# from llama_index.core.agent import AgentRunner, ReActAgent
 
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
-from chatbot.chat.query_engine import create_dataset_retriever, load_retrievers
-from chatbot.adapters import college_scorecard
-from chatbot.config import clients
-from chatbot.chat.agent import create_chat_agent, create_chat_agent_query_pipeline
-from chatbot.chat.models import Datapoint
+# from chatbot.chat.query_engine import create_dataset_retriever, load_retrievers
+# from chatbot.adapters import college_scorecard
+# from chatbot.config import clients
+# from chatbot.chat.agent import create_chat_agent, create_chat_agent_query_pipeline
+# from chatbot.chat.models import Datapoint
 from chatbot.server.conversations.model import ChatHistoryMessage
-from chatbot.chat.ports import ChatMessageHandler
-from chatbot.pipelines.chances import create_chances_query_chain
+
+# from chatbot.chat.ports import ChatMessageHandler
+# from chatbot.pipelines.chances import create_chances_query_chain
 from chatbot.pipelines.chat import app
 
 
-retrievers = load_retrievers(
-    datasets=clients.datasets,
-    llm=clients.gpt_llm,
-    index=clients.pinecone_adapter.get_index(
-        "collega-datasets", embed_model=clients.cohere_embedding_model
-    ),
-)
+# retrievers = load_retrievers(
+#     datasets=clients.datasets,
+#     llm=clients.gpt_llm,
+#     index=clients.pinecone_adapter.get_index(
+#         "collega-datasets", embed_model=clients.cohere_embedding_model
+#     ),
+# )
 
 # chances_query_chain = create_chances_query_chain(
 #     llm=clients.gpt_llm, cds_query_engine=cds_retriever
@@ -98,78 +100,78 @@ async def handle_message(
     return final_state["messages"][-1].content
 
 
-async def handle_message_old(
-    message: str,
-    chat_history: List[ChatHistoryMessage],
-):
-    # return chat_handler.reply(message, chat_history)
-    # create chat agent
-    # chat_agent = create_chat_agent(
-    #     agent_query_pipeline,
-    #     # chat_history=[],
-    #     chat_history=[
-    #         ChatMessage.from_str(
-    #             msg.text,
-    #             role=(
-    #                 MessageRole.ASSISTANT
-    #                 if (role := str(msg.role.value).lower()) == "chatbot"
-    #                 else role
-    #             ),
-    #         )
-    #         for msg in chat_history
-    #     ],
-    # )
+# async def handle_message_old(
+#     message: str,
+#     chat_history: List[ChatHistoryMessage],
+# ):
+#     # return chat_handler.reply(message, chat_history)
+#     # create chat agent
+#     # chat_agent = create_chat_agent(
+#     #     agent_query_pipeline,
+#     #     # chat_history=[],
+#     #     chat_history=[
+#     #         ChatMessage.from_str(
+#     #             msg.text,
+#     #             role=(
+#     #                 MessageRole.ASSISTANT
+#     #                 if (role := str(msg.role.value).lower()) == "chatbot"
+#     #                 else role
+#     #             ),
+#     #         )
+#     #         for msg in chat_history
+#     #     ],
+#     # )
 
-    # result = await chat_agent.achat(message)
-    # return result.response
+#     # result = await chat_agent.achat(message)
+#     # return result.response
 
-    system_prompt = """
-    You are a high school guidance counselor who is trying to help students.
-    Disuade the student if they are not qualified for what they are asking.
-    Always give an answer even if the supporting context is not relevant.
-    """
+#     system_prompt = """
+#     You are a high school guidance counselor who is trying to help students.
+#     Disuade the student if they are not qualified for what they are asking.
+#     Always give an answer even if the supporting context is not relevant.
+#     """
 
-    # chat_agent = SimpleChatEngine.from_defaults(
-    #     llm=clients.cohere_llm,
-    #     system_prompt=system_prompt,
-    #     chat_history=[
-    #         ChatMessage.from_str(
-    #             msg.text,
-    #             role=str(msg.role.value).lower(),
-    #         )
-    #         for msg in chat_history
-    #     ],
-    # )
+#     # chat_agent = SimpleChatEngine.from_defaults(
+#     #     llm=clients.cohere_llm,
+#     #     system_prompt=system_prompt,
+#     #     chat_history=[
+#     #         ChatMessage.from_str(
+#     #             msg.text,
+#     #             role=str(msg.role.value).lower(),
+#     #         )
+#     #         for msg in chat_history
+#     #     ],
+#     # )
 
-    chat_agent = ReActAgent.from_tools(
-        context=system_prompt,
-        tools=retrievers,
-        llm=clients.cohere_llm,
-        chat_history=[
-            ChatMessage.from_str(
-                msg.text,
-                role=str(msg.role.value).lower(),
-            )
-            for msg in chat_history
-        ],
-        verbose=True,
-        max_iterations=20,
-    )
+#     chat_agent = ReActAgent.from_tools(
+#         context=system_prompt,
+#         tools=retrievers,
+#         llm=clients.cohere_llm,
+#         chat_history=[
+#             ChatMessage.from_str(
+#                 msg.text,
+#                 role=str(msg.role.value).lower(),
+#             )
+#             for msg in chat_history
+#         ],
+#         verbose=True,
+#         max_iterations=20,
+#     )
 
-    # chat_agent = CondensePlusContextChatEngine.from_defaults(
-    #     retriever=cds_retriever,
-    #     llm=clients.cohere_llm,
-    #     system_prompt=system_prompt,
-    #     verbose=True,
-    #     chat_history=[
-    #         ChatMessage.from_str(
-    #             msg.text,
-    #             role=str(msg.role.value).lower(),
-    #         )
-    #         for msg in chat_history
-    #     ],
-    # )
+#     # chat_agent = CondensePlusContextChatEngine.from_defaults(
+#     #     retriever=cds_retriever,
+#     #     llm=clients.cohere_llm,
+#     #     system_prompt=system_prompt,
+#     #     verbose=True,
+#     #     chat_history=[
+#     #         ChatMessage.from_str(
+#     #             msg.text,
+#     #             role=str(msg.role.value).lower(),
+#     #         )
+#     #         for msg in chat_history
+#     #     ],
+#     # )
 
-    result = chat_agent.chat(message)
+#     result = chat_agent.chat(message)
 
-    return result.response
+#     return result.response
