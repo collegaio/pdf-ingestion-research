@@ -20,6 +20,8 @@ s3fs
 # llama-index-vector-stores-pinecone==0.1.7
 # llama-parse==0.4.3
 # llamaindex-py-client==0.1.19
-langchain-aws==0.2.0
-langchain-core==0.3.1
-langchain-pinecone==0.2.0
+langchain-aws==0.2.*
+langchain-core==0.3.*
+langchain-pinecone==0.2.*
+langgraph==0.2.*
+langgraph-checkpoint==1.0.*
