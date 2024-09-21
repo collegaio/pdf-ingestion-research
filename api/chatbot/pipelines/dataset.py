@@ -1,20 +1,15 @@
 from typing import List
+
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.language_models import BaseChatModel, LanguageModelInput
+from langchain_core.language_models import BaseChatModel
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore
-from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.tools import StructuredTool, BaseTool
 from langgraph.graph.state import CompiledStateGraph
 
-from chatbot.pipelines.tools import make_tool_pipeline, make_tool_pipeline_acaller
+from chatbot.pipelines.tools import make_tool_pipeline
 from chatbot.chat.models import Datapoint, Dataset
-from chatbot.config.clients import (
-    collega_datasets_index,
-    cohere_langchain_embed_model,
-    datasets,
-)
 
 DEFAULT_QUESTION_ANSWERING_TEMPLATE = """
 Answer the user's questions based on the below context. 

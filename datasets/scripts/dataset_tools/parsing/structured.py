@@ -14,6 +14,9 @@ from pydantic import BaseModel, Field
 
 class Column(BaseModel):
     name: str = Field(description="Column name")
+    possible_values: List[str | int | float] | None = Field(
+        description="Possible values for this column", default=None
+    )
     datatype: Literal["string", "integer", "number", "boolean"] = Field(
         description="JSON Datatype of values for column"
     )
@@ -32,6 +35,18 @@ def columns_to_schema(columns: List[Column]):
                         "anyOf": [{"type": column.datatype}, {"type": "null"}],
                         "default": None,
                         "title": "value",
+                        **(
+                            {
+                                "enum": (
+                                    [True, False] + [None]
+                                    if "boolean" == column.datatype
+                                    else column.possible_values + [None]
+                                )
+                            }
+                            if column.possible_values is not None
+                            or "boolean" == column.datatype
+                            else {}
+                        ),
                     },
                     "explanation": {"title": "explanation", "type": "string"},
                 },

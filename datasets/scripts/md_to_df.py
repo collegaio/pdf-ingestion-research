@@ -90,8 +90,8 @@ async def chat(prompt: str):
                     print(
                         f"Rate limit hit ({retries_remaining} tries remaining), retrying in {timeout_sec} seconds"
                     )
-                    await asyncio.sleep(timeout_sec)
 
+                    await asyncio.sleep(timeout_sec)
                     timeout_sec *= random.randint(2, 4)
                     continue
 
@@ -247,6 +247,7 @@ async def get_column_json(text: str, columns: List[Column]):
             if col.name not in obj or "value" not in obj[col.name]:
                 print(f"Column {col.name} missing ({obj})")
                 all_cols_valid = False
+                continue
 
             value = obj[col.name]["value"]
 
@@ -256,6 +257,7 @@ async def get_column_json(text: str, columns: List[Column]):
             ):
                 print(f"Column {col.name} has wrong datatype ({value}: {col.datatype})")
                 all_cols_valid = False
+                continue
 
             if col.datatype == "integer" and isinstance(value, float):
                 obj[col.name]["value"] = int(value)
