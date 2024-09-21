@@ -17,7 +17,7 @@ import boto3
 
 # from chatbot.chat.models import Datapoint
 # from chatbot.adapters.pinecone import PineconeAdapter
-from api.chatbot.config import env
+from chatbot.config import env
 from chatbot.adapters.datasets import (
     DatasetsConfig,
     load_datasets,
