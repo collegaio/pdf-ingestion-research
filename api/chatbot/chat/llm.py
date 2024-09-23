@@ -26,7 +26,7 @@ async def handle_message(
 
     print(
         "last messages:",
-        "\n".join([msg.content for msg in final_state["messages"][-5:]]),
+        [msg.content for msg in final_state["messages"][-5:]],
     )
     # assert final_state["messages"][-1] is None
     return final_state["messages"][-1].content
