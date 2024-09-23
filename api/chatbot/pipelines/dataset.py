@@ -58,6 +58,7 @@ def load_retrievers(
     return pipelines
 
 
+# TODO: test creates correct amount of retrievers and nested retrievers
 def create_dataset_retriever(
     dataset: Dataset,
     llm: BaseChatModel,
@@ -95,6 +96,7 @@ def create_dataset_retriever(
     )
 
 
+# TODO: test retrieval
 def get_dataset_retriever(
     datapoint: Datapoint, llm: BaseChatModel, vector_store: VectorStore
 ):
@@ -104,6 +106,7 @@ def get_dataset_retriever(
     )
 
     async def query_tool(query: str) -> str:
+        print("query:", query)
         chain = (
             {"context": retriever, "question": RunnablePassthrough()}
             | ChatPromptTemplate.from_messages(
