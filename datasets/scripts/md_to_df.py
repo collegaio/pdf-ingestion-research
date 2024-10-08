@@ -550,8 +550,8 @@ def lambda_handler(event, context):
 def main():
     setup()
 
-    input_file = "../cds/md/cu-boulder.md"
-    output_file = "../cds/parquet/cu-boulder.parquet"
+    input_file = "../cds/md/purdue.md"
+    output_file = "../cds/parquet/purdue.parquet"
 
     df = asyncio.run(
         create_dataframe(

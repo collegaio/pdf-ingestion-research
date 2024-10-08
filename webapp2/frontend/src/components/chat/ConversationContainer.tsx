@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { createId } from "@paralleldrive/cuid2";
 import { fetchJSON } from "../../clients/fetch";
 import { MessageRoles, MessagesResponse } from "../../models/conversations";
+import ChatMenu from "./ChatMenu";
 
 interface ConversationContainerProps {
   conversationId: string;
@@ -19,6 +20,7 @@ const ConversationContainer = ({
   const [message, setMessage] = useState<string>();
   const [hasSentMessage, setHasSentMessage] = useState(false);
   const [isLoadingReply, setIsLoadingReply] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
@@ -111,66 +113,81 @@ const ConversationContainer = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleCloseMenu = () => {
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  };
+
   return (
-    <div className="flex h-full w-full flex-grow flex-col rounded-lg">
-      <div className="flex w-full flex-grow flex-col items-center justify-center space-y-2">
-        {!isLoadingMessages && (messagesResponse?.messages.length ?? 0) < 1 ? (
-          <>
-            <h1 className="text-5xl font-extrabold tracking-tight">
-              Welcome to Collega!
-            </h1>
+    <div className="grid grid-cols-6 gap-4" onClick={handleCloseMenu}>
+      <div className="col-span-1 hidden md:block" />
+      <div className="col-span-5 flex h-full w-full flex-grow flex-col rounded-lg md:col-span-4">
+        <div className="flex w-full flex-grow flex-col items-center justify-center space-y-2">
+          {!isLoadingMessages &&
+          (messagesResponse?.messages.length ?? 0) < 1 ? (
+            <>
+              <h1 className="text-5xl font-extrabold tracking-tight">
+                Welcome to Collega!
+              </h1>
 
-            <p className="text-xl">
-              Get started by asking a question, like &quot;Which schools am I
-              qualified for?&quot;
-            </p>
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
+              <p className="text-xl">
+                Get started by asking a question, like &quot;Which schools am I
+                qualified for?&quot;
+              </p>
+            </>
+          ) : (
+            <></>
+          )}
+        </div>
 
-      <div className="flex w-full flex-col space-y-2 overflow-y-scroll p-4">
-        {messagesResponse?.messages.map((message) => (
-          <div
-            className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
-            key={message.id}
+        <div className="flex w-full flex-col space-y-2 overflow-y-scroll p-4">
+          {messagesResponse?.messages.map((message) => (
+            <div
+              className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
+              key={message.id}
+            >
+              <div className="chat-bubble whitespace-pre-wrap shadow-lg">
+                {message.text}
+              </div>
+            </div>
+          ))}
+
+          {isLoadingReply ? (
+            <div className="chat chat-start">
+              <div className="chat-bubble shadow-lg">
+                <span className="loading loading-bars" />
+              </div>
+            </div>
+          ) : (
+            <></>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="flex w-full flex-row items-end space-x-4 p-4">
+          <Textarea
+            value={message}
+            className="shadow-lg"
+            placeholder="Type your message here."
+            onChange={(e) => setMessage(e.target.value)}
+          />
+
+          <button
+            className="btn btn-square bg-black shadow-lg"
+            type="button"
+            onClick={handleSendMessage}
           >
-            <div className="chat-bubble whitespace-pre-wrap shadow-lg">
-              {message.text}
-            </div>
-          </div>
-        ))}
-
-        {isLoadingReply ? (
-          <div className="chat chat-start">
-            <div className="chat-bubble shadow-lg">
-              <span className="loading loading-bars" />
-            </div>
-          </div>
-        ) : (
-          <></>
-        )}
-
-        <div ref={messagesEndRef} />
+            <PaperPlaneRight color="white" size={32} />
+          </button>
+        </div>
       </div>
 
-      <div className="flex w-full flex-row items-end space-x-4 p-4">
-        <Textarea
-          value={message}
-          className="shadow-lg"
-          placeholder="Type your message here."
-          onChange={(e) => setMessage(e.target.value)}
-        />
-
-        <button
-          className="btn btn-square bg-black shadow-lg"
-          type="button"
-          onClick={handleSendMessage}
-        >
-          <PaperPlaneRight color="white" size={32} />
-        </button>
-      </div>
+      <ChatMenu
+        isMenuOpen={isMenuOpen}
+        onOpenMenu={() => setIsMenuOpen(true)}
+      />
     </div>
   );
 };

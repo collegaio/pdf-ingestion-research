@@ -106,7 +106,6 @@ def get_dataset_retriever(
     )
 
     async def query_tool(query: str) -> str:
-        print("query:", query)
         chain = (
             {"context": retriever, "question": RunnablePassthrough()}
             | ChatPromptTemplate.from_messages(

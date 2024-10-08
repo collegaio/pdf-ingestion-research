@@ -1,13 +1,16 @@
-from typing import Annotated, TypedDict
+from typing import Annotated, Optional, TypedDict
+from click import Option
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from langgraph.graph import START, StateGraph
+from langgraph.graph import START, END, StateGraph
 from langgraph.graph.message import add_messages
 
 # from langgraph.checkpoint.memory import MemorySaver
 
+from chatbot.chat.models import StudentProfile
 from chatbot.pipelines.tools import make_tool_pipeline
 from chatbot.pipelines.dataset import load_retrievers
+from chatbot.pipelines.student import pipeline as student_pipeline
 from chatbot.config.clients import (
     cohere_langchain_embed_model,
     cohere_langchain_llm,
@@ -17,6 +20,8 @@ from chatbot.config.clients import (
 
 
 class ChatState(TypedDict):
+    student_id: str
+    student_profile: Optional[StudentProfile] = None
     messages: Annotated[list, add_messages]
 
 
@@ -71,6 +76,7 @@ def check_no_question(state: ChatState):
         return "continue"
 
 
+# TODO: add top 10 school creator as tool
 tool_graph = make_tool_pipeline(
     tools=[],
     workflows=retriever_tools,
@@ -80,20 +86,31 @@ tool_graph = make_tool_pipeline(
 
 
 async def agent(state: ChatState):
-    print("state:", state)
-    return {"messages": [await cohere_langchain_llm.ainvoke(state["messages"])]}
+    print("incoming agent state:", state)
+    # TODO: add generalized vector search to context
+    # TODO: using extracted information, determine follow up questions
+    result = await cohere_langchain_llm.ainvoke(state["messages"])
+    print("outgoing agent messages:", result)
+    return {"messages": [result]}
 
 
 workflow.add_node("extract_question", determine_question)
+workflow.add_node("student_info", student_pipeline)
 workflow.add_node("agent", agent)
 workflow.add_node("graph", tool_graph)
 
+workflow.add_edge(START, "student_info")
+# workflow.add_edge(START, "extract_question")
+
+workflow.add_edge("student_info", "extract_question")
 workflow.add_conditional_edges(
     "extract_question", check_no_question, {"default": "agent", "continue": "graph"}
 )
 
-workflow.add_edge(START, "extract_question")
+workflow.add_edge("graph", END)
+workflow.add_edge("agent", END)
 
-# # checkpointer = MemorySaver()
+# checkpointer = MemorySaver()
 
 app = workflow.compile()
+print(app.get_graph().draw_mermaid())

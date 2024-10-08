@@ -64,18 +64,6 @@ def load_dataset(
 
 
 def load_datasets(config: DatasetsConfig) -> List[Dataset]:
-    # session = botocore.session.get_session()
-
-    # client = session.create_client(
-    #     "sts",
-    #     # region_name="us-east-1",
-    #     # aws_access_key_id=env.S3_ACCESS_KEY_ID,
-    #     # aws_secret_access_key=env.S3_SECRET_ACCESS_KEY,
-    # )
-
-    # credentials = client.get_session_token()["Credentials"]
-    # print(env.AWS_ACCESS_KEY_ID)
-    # print(env.AWS_SECRET_ACCESS_KEY)
     fs = s3fs.S3FileSystem(
         key=env.AWS_ACCESS_KEY_ID,
         secret=env.AWS_SECRET_ACCESS_KEY,

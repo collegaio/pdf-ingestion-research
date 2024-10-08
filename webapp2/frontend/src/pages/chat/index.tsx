@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { createConversation } from "../../actions/conversations";
 import ConversationContainer from "../../components/chat/ConversationContainer";
 import { useHomepageConversationStore } from "../../state/conversations";
+import { useHomepageStudentStore } from "../../state/student";
+import { createStudent } from "../../actions/students";
 
 const ChatPage = () => {
   // return (
@@ -45,6 +47,15 @@ const ChatPage = () => {
       hasLoadedConversation: state._hasHydrated,
     }));
 
+  const { studentId, setStudentId, hasLoadedStudent } = useHomepageStudentStore(
+    (state) => ({
+      studentId: state.studentId,
+      setStudentId: state.setStudentId,
+      hasLoadedStudent: state._hasHydrated,
+    }),
+  );
+
+  // Create conversation if no conversation
   useEffect(() => {
     const handleCreateConversation = async () => {
       const conversation = await createConversation();
@@ -55,6 +66,21 @@ const ChatPage = () => {
       void handleCreateConversation();
     }
   }, [conversationId, hasLoadedConversation, setConversationId]);
+
+  // Create student if no student
+  useEffect(() => {
+    if (hasLoadedStudent && !studentId) {
+      const handleCreateStudent = async () => {
+        const student = await createStudent();
+        setStudentId(student.id);
+      };
+
+      void handleCreateStudent();
+    }
+  }, [hasLoadedStudent, studentId, setStudentId]);
+
+  console.log("conversationId:", conversationId);
+  console.log("studentId:", studentId);
 
   return (
     <main className="flex flex-col items-center">

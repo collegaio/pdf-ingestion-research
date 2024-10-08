@@ -1,3 +1,5 @@
+from doctest import debug
+from tabnanny import verbose
 from typing import Annotated, List, TypedDict
 
 from langchain_core.messages import HumanMessage
@@ -12,8 +14,12 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 
+from chatbot.chat.models import StudentProfile
+
 
 class State(TypedDict):
+    # student_id: str
+    # student_profile: StudentProfile
     messages: Annotated[list, add_messages]
     selected_tools: list[str]
     selected_workflows: list[str]
@@ -27,21 +33,24 @@ class Workflow(TypedDict):
 
 def make_tool_selector(tool_vectorstore: VectorStore):
     async def select_tools(state: State):
-        # TODO: determine question from all messages
         last_user_message = state["messages"][-1]
 
         query = last_user_message.content
-
-        tool_documents = await tool_vectorstore.asimilarity_search_with_score(
-            query, k=1
+        print("query:", query)
+        tool_documents = await tool_vectorstore.asimilarity_search(
+            query,
+            k=1,
+            debug=False,
+            verbose=False,
         )
 
+        print("tool_documents:", tool_documents)
         selected = {
             "selected_tools": [],
             "selected_workflows": [],
         }
 
-        for doc, _ in tool_documents:
+        for doc in tool_documents:
             if "workflow_name" in doc.metadata:
                 selected["selected_workflows"].append(doc.id)
             elif "tool_name" in doc.metadata:
@@ -54,11 +63,16 @@ def make_tool_selector(tool_vectorstore: VectorStore):
 
 def make_agent(llm: BaseChatModel, tools: List[BaseTool]):
     async def agent(state: State):
+        print("graph state:", state)
         llm_with_tools = llm.bind_tools(
             [tool for tool in tools if tool.name in state["selected_tools"]]
         )
 
-        return {"messages": [await llm_with_tools.ainvoke(state["messages"])]}
+        result = await llm_with_tools.ainvoke(state["messages"])
+        print("outgoing graph messages:", result)
+        return {"messages": [result]}
+
+        # return {"messages": [await llm_with_tools.ainvoke(state["messages"])]}
 
     return agent
 
@@ -86,6 +100,8 @@ def make_tool_pipeline(
     tool_node = ToolNode(tools=tools)
     tool_vectorstore = InMemoryVectorStore(embed_model)
 
+    # add tool descriptions to vector store
+    # TODO: add possible questions as documents
     tool_vectorstore.add_documents(
         [
             Document(
@@ -97,6 +113,8 @@ def make_tool_pipeline(
         ]
     )
 
+    # add workflow descriptions as tools to vector store
+    # TODO: add possible questions as documents
     tool_vectorstore.add_documents(
         [
             Document(
@@ -138,10 +156,10 @@ def make_tool_pipeline(
     return workflow.compile()
 
 
-def make_tool_pipeline_acaller(pipeline: CompiledStateGraph):
-    async def acall_tool_pipeline(message: str):
-        return await pipeline.ainvoke(
-            {"messages": [HumanMessage(content=message)]},
-        )
+# def make_tool_pipeline_acaller(pipeline: CompiledStateGraph):
+#     async def acall_tool_pipeline(message: str):
+#         return await pipeline.ainvoke(
+#             {"messages": [HumanMessage(content=message)]},
+#         )
 
-    return acall_tool_pipeline
+#     return acall_tool_pipeline

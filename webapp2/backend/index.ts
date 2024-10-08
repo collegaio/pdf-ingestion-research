@@ -13,6 +13,7 @@ import env from "./config/env";
 // import profilesController from "./controllers/profiles.controller";
 // import pushNotificationsTokenController from "./controllers/pushNotificationTokens.controller";
 import conversationsController from "./routes/conversations.controller";
+import studentsController from "./routes/students.controller";
 import { BackendError } from "./models/error.model";
 // import { prisma } from "./repositories/prisma";
 
@@ -48,6 +49,7 @@ server.register(fastifyRequestContext, {
 
 server.register(cors);
 server.register(conversationsController, { prefix: "/conversations" });
+server.register(studentsController, { prefix: "/students" });
 // server.register(photosController, { prefix: "/photos" });
 // server.register(locationsController, { prefix: "/locations" });
 // server.register(missionsController, { prefix: "/missions" });

@@ -35,3 +35,21 @@ model Message {
 
     @@map("messages")
 }
+
+model StudentProfile {
+    id                     String   @id @default(cuid())
+    name                   String?
+    gender                 String?
+    geographic_preferences String[] @default([])
+    school_preferences     String[] @default([])
+    major_interests        String[] @default([])
+    class_year             Int?
+    graduation_year        Int?
+    unweighted_gpa         Float?
+    weighted_gpa           Float?
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    @@map("student_profiles")
+}

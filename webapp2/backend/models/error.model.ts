@@ -1,4 +1,10 @@
+import { Type } from "@fastify/type-provider-typebox";
+
 type ErrorCodes = 400 | 401 | 403 | 404 | 500;
+
+export const ErrorSchema = Type.Object({
+  message: Type.String(),
+});
 
 export class BackendError extends Error {
   code: ErrorCodes;

@@ -7,6 +7,7 @@ from chatbot.pipelines.chat import app
 
 
 async def handle_message(
+    student_id: str,
     message: str,
     chat_history: List[ChatHistoryMessage],
 ):
@@ -18,15 +19,16 @@ async def handle_message(
 
     final_state = await app.ainvoke(
         {
+            "student_id": student_id,
             "messages": [SystemMessage(content=system_prompt)]
             + [message.to_langchain_message() for message in chat_history]
-            + [HumanMessage(content=message)]
+            + [HumanMessage(content=message)],
         },
     )
 
-    print(
-        "last messages:",
-        [msg.content for msg in final_state["messages"][-5:]],
-    )
+    print("last messages:")
+    for msg in final_state["messages"]:
+        print("msg:", msg.content)
+
     # assert final_state["messages"][-1] is None
     return final_state["messages"][-1].content

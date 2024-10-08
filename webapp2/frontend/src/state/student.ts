@@ -1,19 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface ConversationStore {
-  conversationId?: string | null;
-  setConversationId: (conversationId: string) => void;
+interface StudentStore {
+  studentId?: string | null;
+  setStudentId: (studentId: string) => void;
   _hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
 }
 
-export const useHomepageConversationStore = create<ConversationStore>()(
+export const useHomepageStudentStore = create<StudentStore>()(
   persist(
     // (set, get)
     (set) => ({
-      conversationId: undefined,
-      setConversationId: (conversationId: string) => set({ conversationId }),
+      studentId: undefined,
+      setStudentId: (studentId: string) => set({ studentId }),
       _hasHydrated: false,
       setHasHydrated: (hasHydrated: boolean) => {
         set({
@@ -22,7 +22,7 @@ export const useHomepageConversationStore = create<ConversationStore>()(
       },
     }),
     {
-      name: "homepage-conversation",
+      name: "homepage-student",
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setHasHydrated(true);

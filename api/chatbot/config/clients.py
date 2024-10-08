@@ -43,13 +43,13 @@ dataset_config = DatasetsConfig(
         "datasets": {
             "cds_files": {
                 "properties": {
-                    "description": "Answers questions about admissions data from 2023 onward such as GPA, standardized test scores, demographic data, and financial aid award sizes",
+                    "description": "College admissions data including GPA, standardized test scores, demographic data, and financial aid award sizes",
                     "datapoint_prefix": "Admissions data for ",
                 }
             },
             "training_info": {
                 "properties": {
-                    "description": "Guides for applying to college",
+                    "description": "Tips for applying to college",
                     "datapoint_prefix": "",
                 }
             },

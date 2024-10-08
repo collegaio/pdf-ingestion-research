@@ -5,6 +5,7 @@
 import "./styles/globals.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ChatPage from "./pages/chat";
+import ProfilePage from "./pages/profile";
 
 function App() {
   // const [count, setCount] = useState(0);
@@ -13,6 +14,10 @@ function App() {
     {
       path: "/",
       element: <ChatPage />,
+    },
+    {
+      path: "/profile",
+      element: <ProfilePage />,
     },
   ]);
 

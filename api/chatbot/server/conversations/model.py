@@ -27,5 +27,6 @@ class ChatHistoryMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
+    student_id: str
     message: str
     chat_history: List[ChatHistoryMessage]
