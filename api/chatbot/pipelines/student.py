@@ -115,7 +115,9 @@ def update_student_info(state: InfoExtractionState):
     Returns:
         InfoExtractionState: The updated state with the provided information.
     """
+    print("parsed student profile:", state["student_profile"])
     current_student_profile = get_student_profile(state["student_id"])
+    print("current student profile:", current_student_profile)
 
     for field, value in state["student_profile"]:
         if getattr(current_student_profile, field) is None:
