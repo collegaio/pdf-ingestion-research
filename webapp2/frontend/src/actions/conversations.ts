@@ -4,8 +4,13 @@ import {
   type MessageResponse,
 } from "../models/conversations";
 
-export const createConversation = async () => {
-  const response = await apiClient.post<ConversationResponse>(`/conversations`);
+export const createConversation = async (studentId: string) => {
+  const response = await apiClient.post<ConversationResponse>(
+    `/conversations`,
+    {
+      studentId,
+    },
+  );
 
   return response.data;
 };

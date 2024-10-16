@@ -1,4 +1,3 @@
-import { Textarea } from "../ui/textarea";
 import { PaperPlaneRight } from "@phosphor-icons/react/dist/ssr";
 import useSWR from "swr";
 // import { MessageRoles, type MessagesResponse } from "~/models/conversations";
@@ -9,7 +8,16 @@ import { createId } from "@paralleldrive/cuid2";
 import { fetchJSON } from "../../clients/fetch";
 import { MessageRoles, MessagesResponse } from "../../models/conversations";
 import ChatMenu from "./ChatMenu";
+import { Textarea } from "../../components/ui/textarea";
 
+import {
+  Dialog,
+  DialogHeader,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "../../components/ui/dialog";
 interface ConversationContainerProps {
   conversationId: string;
 }
@@ -122,6 +130,7 @@ const ConversationContainer = ({
   return (
     <div className="grid grid-cols-6 gap-4" onClick={handleCloseMenu}>
       <div className="col-span-1 hidden md:block" />
+
       <div className="col-span-5 flex h-full w-full flex-grow flex-col rounded-lg md:col-span-4">
         <div className="flex w-full flex-grow flex-col items-center justify-center space-y-2">
           {!isLoadingMessages &&
@@ -184,10 +193,12 @@ const ConversationContainer = ({
         </div>
       </div>
 
-      <ChatMenu
-        isMenuOpen={isMenuOpen}
-        onOpenMenu={() => setIsMenuOpen(true)}
-      />
+      <div className="col-span-1">
+        <ChatMenu
+          isMenuOpen={isMenuOpen}
+          onOpenMenu={() => setIsMenuOpen(true)}
+        />
+      </div>
     </div>
   );
 };

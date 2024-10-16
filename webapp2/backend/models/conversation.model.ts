@@ -8,6 +8,12 @@ export enum MessageRoles {
 }
 
 // Requests
+export const CreateConversationRequestSchema = Type.Object({
+  studentId: Type.String(),
+});
+
+export type CreateConversationRequest = Static<typeof CreateConversationRequestSchema>;
+
 export const ChatRequestSchema = Type.Object({
   message: Type.String(),
 });

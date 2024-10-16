@@ -15,10 +15,6 @@ function App() {
       path: "/",
       element: <ChatPage />,
     },
-    {
-      path: "/profile",
-      element: <ProfilePage />,
-    },
   ]);
 
   // return (

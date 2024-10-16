@@ -22,11 +22,19 @@ export const getStudentProfileByID = async (id: string) => {
 // update student profile
 export const updateStudentProfile = async (
   id: string,
-  data: UpdateStudentProfile
+  update: UpdateStudentProfile
 ) => {
   const studentProfile = await db.studentProfile.update({
     where: { id },
-    data,
+    data: {
+      name: update.name,
+      gender: update.gender,
+      geographic_preferences: update.geographicPreferences ?? [],
+      school_preferences: update.schoolPreferences ?? [],
+      major_interests: update.majorInterests ?? [],
+      class_year: update.classYear,
+      graduation_year: update.graduationYear,
+    },
   });
 
   return studentProfile;

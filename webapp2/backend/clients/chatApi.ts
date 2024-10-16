@@ -11,10 +11,13 @@ const createChatAPIClient = () => {
 const chatAPIClient = createChatAPIClient();
 
 export const callChatAPI = async (
+  studentId: string,
   message: string,
   history: { text: string; role: string }[]
 ) => {
+  // TODO: add student_id
   const response = await chatAPIClient.post<{ message: string }>("/chat", {
+    student_id: studentId,
     message: message,
     chat_history: history,
   });

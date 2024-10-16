@@ -8,10 +8,11 @@ import {
 import { callChatAPI } from "../clients/chatApi";
 import { NotFoundError } from "../models/error.model";
 
-export const createConversation = async () => {
+export const createConversation = async (studentId: string) => {
   const conversation = await db.conversation.create({
     data: {
       name: "placeholder",
+      student_id: studentId,
     },
   });
 
@@ -72,19 +73,23 @@ export const createMessage = async (
 export const initiateChat = async (
   conversationId: string
 ): Promise<MessageResponse> => {
-  const messages = await db.message.findMany({
-    where: { conversation_id: conversationId },
-    orderBy: {
-      created_at: "asc",
+  const conversation = await db.conversation.findFirst({
+    where: { id: conversationId },
+    include: {
+      student: true,
+      messages: {
+        orderBy: {
+          created_at: 'asc'
+        }
+      },
     },
   });
 
-  // if (!conversation) {
-  //   return NextResponse.json(
-  //     { error: `Conversation ${params.conversationId} not found` },
-  //     { status: 404 },
-  //   );
-  // }
+  if (!conversation) {
+    throw new NotFoundError(`Conversation ${conversationId} not found`);
+  }
+
+  const messages = conversation.messages;
 
   // TODO: move to service level
   let hasAllNewMessages = false;
@@ -103,16 +108,21 @@ export const initiateChat = async (
     }
   }
 
+  const newUserMessage = foundMessages
+    .reverse()
+    .map((message) => message.text)
+    .join("\n\n");
+
+  const roleMappedHistory = history
+    .reverse()
+    .map((message) => ({ text: message.text, role: message.role }));
+
   // TODO: condense conversation (possibly on bot side)
   // TODO: don't send if last message is not from user (possibly regenerate response)
   const response = await callChatAPI(
-    foundMessages
-      .reverse()
-      .map((message) => message.text)
-      .join("\n\n"),
-    history
-      .reverse()
-      .map((message) => ({ text: message.text, role: message.role }))
+    conversation.student_id,
+    newUserMessage,
+    roleMappedHistory
   );
 
   const responseMessage = await db.message.create({

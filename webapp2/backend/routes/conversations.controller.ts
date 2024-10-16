@@ -4,6 +4,7 @@ import { FastifyInstance } from "fastify/types/instance";
 import {
   ChatRequestSchema,
   ConversationResponseSchema,
+  CreateConversationRequestSchema,
   MessageResponseSchema,
   MessagesResponseSchema,
 } from "../models/conversation.model";
@@ -23,13 +24,14 @@ const router = (
     "/",
     {
       schema: {
+        body: CreateConversationRequestSchema,
         response: {
           201: ConversationResponseSchema,
         },
       },
     },
-    async (_, response) => {
-      const conversation = await createConversation();
+    async (request, response) => {
+      const conversation = await createConversation(request.body.studentId);
 
       return response.code(201).send(conversation);
     }
