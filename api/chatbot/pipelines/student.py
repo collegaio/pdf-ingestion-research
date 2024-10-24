@@ -74,7 +74,10 @@ async def extract_student_info(state: InfoExtractionState):
     )
 
     # Invoke the LLM
+    print("full_prompt:", full_prompt)
     llm_response = await cohere_langchain_llm.ainvoke(full_prompt)
+
+    print("llm_response:", llm_response)
 
     # Parse the LLM output
     # json_start = llm_response.content.find("{")

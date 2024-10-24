@@ -35,9 +35,10 @@ interface SettingsCardFormValues {
 
 interface SettingsCardProps {
   studentId: string;
+  onClose: () => void;
 }
 
-const SettingsCard = ({ studentId }: SettingsCardProps) => {
+const SettingsCard = ({ studentId, onClose }: SettingsCardProps) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const form = useForm<SettingsCardFormValues>();
@@ -95,6 +96,7 @@ const SettingsCard = ({ studentId }: SettingsCardProps) => {
       };
 
       await mutateStudent(updateFn(), options);
+      onClose();
     } catch (error) {
       console.error("Failed to update student:", error);
       setErrorMessage("Failed to update profile. Please try again.");

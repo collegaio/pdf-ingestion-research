@@ -17,6 +17,7 @@ class Dataset(BaseModel):
 
 
 class StudentProfile(BaseModel):
+    student_id: str
     unweighted_gpa: float | None = Field(
         description="The student's unweighted GPA", default=None
     )

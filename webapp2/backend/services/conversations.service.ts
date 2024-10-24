@@ -79,8 +79,8 @@ export const initiateChat = async (
       student: true,
       messages: {
         orderBy: {
-          created_at: 'asc'
-        }
+          created_at: "asc",
+        },
       },
     },
   });

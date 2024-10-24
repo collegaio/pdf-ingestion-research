@@ -9,6 +9,7 @@ import { MessageRoles, MessagesResponse } from "../../models/conversations";
 import ChatMenu from "./ChatMenu";
 import ChatTextbox from "./ChatTextbox";
 import MessagePrompt from "./MessagePrompt";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 interface ConversationContainerProps {
   conversationId: string;
 }
@@ -26,6 +27,7 @@ const ConversationContainer = ({
   conversationId,
 }: ConversationContainerProps) => {
   const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [hasSentMessage, setHasSentMessage] = useState(false);
   const [isLoadingReply, setIsLoadingReply] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -66,6 +68,7 @@ const ConversationContainer = ({
         });
       } catch (error) {
         console.error("Error asking chatbot:", error);
+        setErrorMessage((error as Error).message);
       } finally {
         setIsLoadingReply(false);
       }
@@ -116,6 +119,7 @@ const ConversationContainer = ({
 
     await mutateMessages(updateFn(), options);
     setHasSentMessage(true);
+    setMessage("");
   };
 
   const scrollToBottom = () => {
@@ -133,72 +137,105 @@ const ConversationContainer = ({
   }, [isLoadingMessages, messagesResponse?.messages.length]);
 
   return (
-    <div className="grid h-full grid-cols-6 gap-4" onClick={handleCloseMenu}>
-      <div className="col-span-1 hidden md:block" />
+    <div
+      className="flex grid h-full grid-cols-6 grid-rows-[auto_1fr] flex-col gap-8 py-8"
+      onClick={handleCloseMenu}
+    >
+      <div className="col-span-6">
+        <div className="grid grid-cols-6">
+          <div className="fixed right-4 top-4 z-10 col-span-1 col-start-6 flex flex-row items-center justify-end">
+            <ChatMenu
+              isMenuOpen={isMenuOpen}
+              onOpenMenu={() => setIsMenuOpen(true)}
+            />
+          </div>
+        </div>
+      </div>
 
-      <div className="col-span-6 mx-4 flex h-full w-auto flex-grow flex-col rounded-lg md:col-span-4 md:mx-0">
-        {!hasMessages ? (
-          <div className="flex h-full w-full flex-grow flex-col items-center justify-center space-y-8">
-            <h1 className="text-center text-4xl font-extrabold tracking-tight md:text-6xl">
-              Welcome to Collega!
-            </h1>
+      <div className="col-span-6 flex-grow">
+        <div className="col-span-4 col-start-2 mx-4 flex h-full flex-grow flex-col rounded-lg md:col-span-4">
+          {!hasMessages ? (
+            <div className="flex h-full w-full flex-grow flex-col items-center justify-center space-y-8">
+              <h1 className="text-center text-4xl font-extrabold tracking-tight md:text-6xl">
+                Welcome to Collega!
+              </h1>
 
-            <div className="grid grid-cols-2 gap-4">
-              {prompts.map((prompt) => (
-                <MessagePrompt
-                  prompt={prompt}
-                  onClick={() => setMessage(prompt)}
+              <p className="text-center text-lg">
+                Get started by asking anything about college admissions, trade
+                school, or anything to do with life after high school
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                {prompts.map((prompt) => (
+                  <MessagePrompt
+                    prompt={prompt}
+                    onClick={() => setMessage(prompt)}
+                  />
+                ))}
+              </div>
+
+              {errorMessage && (
+                <div className="flex w-full justify-center">
+                  <div className="w-1/4">
+                    <Alert variant="destructive">
+                      <AlertTitle>lol something went wrong</AlertTitle>
+                      <AlertDescription>{errorMessage}</AlertDescription>
+                    </Alert>
+                  </div>
+                </div>
+              )}
+
+              <div className="w-1/2">
+                <ChatTextbox
+                  message={message}
+                  setMessage={setMessage}
+                  onSendMessage={handleSendMessage}
                 />
-              ))}
+              </div>
             </div>
+          ) : (
+            <div className="flex w-full flex-grow flex-col">
+              <div className="flex-grow space-y-2 overflow-y-auto p-4">
+                {messagesResponse?.messages.map((message) => (
+                  <div
+                    className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
+                    key={message.id}
+                  >
+                    <div className="chat-bubble whitespace-pre-wrap shadow-lg">
+                      {message.text}
+                    </div>
+                  </div>
+                ))}
 
+                {errorMessage && (
+                  <div className="chat chat-start">
+                    <div className="chat-bubble chat-bubble-warning whitespace-pre-wrap shadow-lg">
+                      Something went wrong: {errorMessage}
+                    </div>
+                  </div>
+                )}
+
+                {isLoadingReply && (
+                  <div className="chat chat-start">
+                    <div className="chat-bubble shadow-lg">
+                      <span className="loading loading-bars" />
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+          )}
+
+          {hasMessages && (
             <ChatTextbox
               message={message}
               setMessage={setMessage}
               onSendMessage={handleSendMessage}
             />
-          </div>
-        ) : (
-          <div className="flex w-full flex-grow flex-col">
-            <div className="flex-grow space-y-2 overflow-y-auto p-4">
-              {messagesResponse?.messages.map((message) => (
-                <div
-                  className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
-                  key={message.id}
-                >
-                  <div className="chat-bubble whitespace-pre-wrap shadow-lg">
-                    {message.text}
-                  </div>
-                </div>
-              ))}
-
-              {isLoadingReply && (
-                <div className="chat chat-start">
-                  <div className="chat-bubble shadow-lg">
-                    <span className="loading loading-bars" />
-                  </div>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-        )}
-
-        {hasMessages && (
-          <ChatTextbox
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMessage}
-          />
-        )}
-      </div>
-
-      <div className="col-span-1">
-        <ChatMenu
-          isMenuOpen={isMenuOpen}
-          onOpenMenu={() => setIsMenuOpen(true)}
-        />
+          )}
+        </div>
       </div>
     </div>
   );

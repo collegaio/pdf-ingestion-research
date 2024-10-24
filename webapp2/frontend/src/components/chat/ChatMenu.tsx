@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Student } from "@phosphor-icons/react/dist/ssr";
 
 import { Dialog, DialogTrigger } from "../ui/dialog";
@@ -11,26 +11,29 @@ interface ChatMenuProps {
 }
 
 const ChatMenu: React.FC<ChatMenuProps> = ({ isMenuOpen, onOpenMenu }) => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const { studentId } = useHomepageStudentStore((state) => ({
     studentId: state.studentId,
   }));
 
   return (
     <>
-      <Dialog>
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         {isMenuOpen ? (
-          <div className="fixed right-4 top-4 z-10">
-            <ul className="menu w-56 rounded-box bg-base-200">
-              <li>
-                <DialogTrigger>
-                  <Student size={24} /> My Profile
-                </DialogTrigger>
-              </li>
-            </ul>
-          </div>
+          // <div className="fixed right-4 top-4 z-10">
+          <ul className="menu w-56 rounded-box bg-base-200">
+            <li>
+              <DialogTrigger>
+                <Student size={24} /> My Profile
+              </DialogTrigger>
+            </li>
+          </ul>
         ) : (
+          // </div>
           <button
-            className="btn btn-square fixed right-4 top-4 z-10"
+            className="btn btn-square"
+            // className="btn btn-square fixed right-4 top-4 z-10"
             onClick={onOpenMenu}
           >
             <svg
@@ -50,7 +53,12 @@ const ChatMenu: React.FC<ChatMenuProps> = ({ isMenuOpen, onOpenMenu }) => {
           </button>
         )}
 
-        {studentId && <SettingsCard studentId={studentId} />}
+        {studentId && (
+          <SettingsCard
+            studentId={studentId}
+            onClose={() => setIsSettingsOpen(false)}
+          />
+        )}
       </Dialog>
     </>
   );
