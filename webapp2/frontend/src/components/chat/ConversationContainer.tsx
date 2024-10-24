@@ -1,31 +1,31 @@
-import { PaperPlaneRight } from "@phosphor-icons/react/dist/ssr";
 import useSWR from "swr";
 // import { MessageRoles, type MessagesResponse } from "~/models/conversations";
 import { type ErrorResponse } from "../../models/errors";
 import { askChatbot, sendMessage } from "../../actions/conversations";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createId } from "@paralleldrive/cuid2";
 import { fetchJSON } from "../../clients/fetch";
 import { MessageRoles, MessagesResponse } from "../../models/conversations";
 import ChatMenu from "./ChatMenu";
-import { Textarea } from "../../components/ui/textarea";
-
-import {
-  Dialog,
-  DialogHeader,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "../../components/ui/dialog";
+import ChatTextbox from "./ChatTextbox";
+import MessagePrompt from "./MessagePrompt";
 interface ConversationContainerProps {
   conversationId: string;
 }
 
+const prompts = [
+  "What are the application deadlines for [School Name]?",
+  "What are the admission requirements for [School Name]?",
+  "How can I improve my chances of admission?",
+  "What scholarships are available for [Major/Program]?",
+  "How do I write a strong personal statement?",
+  "What are the application deadlines for [School Name]?",
+];
+
 const ConversationContainer = ({
   conversationId,
 }: ConversationContainerProps) => {
-  const [message, setMessage] = useState<string>();
+  const [message, setMessage] = useState("");
   const [hasSentMessage, setHasSentMessage] = useState(false);
   const [isLoadingReply, setIsLoadingReply] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,12 +55,20 @@ const ConversationContainer = ({
       }
 
       setIsLoadingReply(true);
-      const reply = await askChatbot(conversationId);
 
-      setHasSentMessage(false);
-      setIsLoadingReply(false);
+      try {
+        const reply = await askChatbot(conversationId);
 
-      await mutateMessages({ messages: [...messagesResponse.messages, reply] });
+        setHasSentMessage(false);
+
+        await mutateMessages({
+          messages: [...messagesResponse.messages, reply],
+        });
+      } catch (error) {
+        console.error("Error asking chatbot:", error);
+      } finally {
+        setIsLoadingReply(false);
+      }
     };
 
     const timeoutId = setTimeout(() => {
@@ -69,13 +77,7 @@ const ConversationContainer = ({
     }, 2_000);
 
     return () => clearTimeout(timeoutId);
-  }, [
-    message,
-    hasSentMessage,
-    conversationId,
-    messagesResponse,
-    mutateMessages,
-  ]);
+  }, [hasSentMessage, conversationId, messagesResponse, mutateMessages]);
 
   // Start at bottom of screen
   useEffect(() => {
@@ -113,7 +115,6 @@ const ConversationContainer = ({
     };
 
     await mutateMessages(updateFn(), options);
-    setMessage("");
     setHasSentMessage(true);
   };
 
@@ -127,70 +128,70 @@ const ConversationContainer = ({
     }
   };
 
+  const hasMessages = useMemo(() => {
+    return !isLoadingMessages && (messagesResponse?.messages.length ?? 0) > 0;
+  }, [isLoadingMessages, messagesResponse?.messages.length]);
+
   return (
-    <div className="grid grid-cols-6 gap-4" onClick={handleCloseMenu}>
+    <div className="grid h-full grid-cols-6 gap-4" onClick={handleCloseMenu}>
       <div className="col-span-1 hidden md:block" />
 
-      <div className="col-span-5 flex h-full w-full flex-grow flex-col rounded-lg md:col-span-4">
-        <div className="flex w-full flex-grow flex-col items-center justify-center space-y-2">
-          {!isLoadingMessages &&
-          (messagesResponse?.messages.length ?? 0) < 1 ? (
-            <>
-              <h1 className="text-5xl font-extrabold tracking-tight">
-                Welcome to Collega!
-              </h1>
+      <div className="col-span-6 mx-4 flex h-full w-auto flex-grow flex-col rounded-lg md:col-span-4 md:mx-0">
+        {!hasMessages ? (
+          <div className="flex h-full w-full flex-grow flex-col items-center justify-center space-y-8">
+            <h1 className="text-center text-4xl font-extrabold tracking-tight md:text-6xl">
+              Welcome to Collega!
+            </h1>
 
-              <p className="text-xl">
-                Get started by asking a question, like &quot;Which schools am I
-                qualified for?&quot;
-              </p>
-            </>
-          ) : (
-            <></>
-          )}
-        </div>
-
-        <div className="flex w-full flex-col space-y-2 overflow-y-scroll p-4">
-          {messagesResponse?.messages.map((message) => (
-            <div
-              className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
-              key={message.id}
-            >
-              <div className="chat-bubble whitespace-pre-wrap shadow-lg">
-                {message.text}
-              </div>
+            <div className="grid grid-cols-2 gap-4">
+              {prompts.map((prompt) => (
+                <MessagePrompt
+                  prompt={prompt}
+                  onClick={() => setMessage(prompt)}
+                />
+              ))}
             </div>
-          ))}
 
-          {isLoadingReply ? (
-            <div className="chat chat-start">
-              <div className="chat-bubble shadow-lg">
-                <span className="loading loading-bars" />
-              </div>
+            <ChatTextbox
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+            />
+          </div>
+        ) : (
+          <div className="flex w-full flex-grow flex-col">
+            <div className="flex-grow space-y-2 overflow-y-auto p-4">
+              {messagesResponse?.messages.map((message) => (
+                <div
+                  className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
+                  key={message.id}
+                >
+                  <div className="chat-bubble whitespace-pre-wrap shadow-lg">
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+
+              {isLoadingReply && (
+                <div className="chat chat-start">
+                  <div className="chat-bubble shadow-lg">
+                    <span className="loading loading-bars" />
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
-          ) : (
-            <></>
-          )}
+          </div>
+        )}
 
-          <div ref={messagesEndRef} />
-        </div>
-
-        <div className="flex w-full flex-row items-end space-x-4 p-4">
-          <Textarea
-            value={message}
-            className="shadow-lg"
-            placeholder="Type your message here."
-            onChange={(e) => setMessage(e.target.value)}
+        {hasMessages && (
+          <ChatTextbox
+            message={message}
+            setMessage={setMessage}
+            onSendMessage={handleSendMessage}
           />
-
-          <button
-            className="btn btn-square bg-black shadow-lg"
-            type="button"
-            onClick={handleSendMessage}
-          >
-            <PaperPlaneRight color="white" size={32} />
-          </button>
-        </div>
+        )}
       </div>
 
       <div className="col-span-1">
