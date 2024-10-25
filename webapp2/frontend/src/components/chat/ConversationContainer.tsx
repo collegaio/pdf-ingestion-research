@@ -23,6 +23,10 @@ const prompts = [
   "What are the application deadlines for [School Name]?",
 ];
 
+// const messagesResponse = {
+//   messages: [],
+// };
+
 const ConversationContainer = ({
   conversationId,
 }: ConversationContainerProps) => {
@@ -156,7 +160,7 @@ const ConversationContainer = ({
         <div className="col-span-4 col-start-2 mx-4 flex h-full flex-grow flex-col rounded-lg md:col-span-4">
           {!hasMessages ? (
             <div className="flex h-full w-full flex-grow flex-col items-center justify-center space-y-8">
-              <h1 className="text-center text-4xl font-extrabold tracking-tight md:text-6xl">
+              <h1 className="text-center text-4xl font-bold tracking-tight md:text-6xl">
                 Welcome to Collega!
               </h1>
 
@@ -195,7 +199,7 @@ const ConversationContainer = ({
             </div>
           ) : (
             <div className="flex w-full flex-grow flex-col">
-              <div className="flex-grow space-y-2 overflow-y-auto p-4">
+              <div className="flex flex-grow flex-col justify-end space-y-2 overflow-y-auto p-4">
                 {messagesResponse?.messages.map((message) => (
                   <div
                     className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}

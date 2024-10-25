@@ -21,7 +21,6 @@ const ChatMenu: React.FC<ChatMenuProps> = ({ isMenuOpen, onOpenMenu }) => {
     <>
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         {isMenuOpen ? (
-          // <div className="fixed right-4 top-4 z-10">
           <ul className="menu w-56 rounded-box bg-base-200">
             <li>
               <DialogTrigger>
@@ -31,11 +30,7 @@ const ChatMenu: React.FC<ChatMenuProps> = ({ isMenuOpen, onOpenMenu }) => {
           </ul>
         ) : (
           // </div>
-          <button
-            className="btn btn-square"
-            // className="btn btn-square fixed right-4 top-4 z-10"
-            onClick={onOpenMenu}
-          >
+          <button className="btn btn-square" onClick={onOpenMenu}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
