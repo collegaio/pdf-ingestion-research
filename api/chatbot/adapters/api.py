@@ -48,4 +48,5 @@ def update_student_profile(student_id: str, profile: StudentProfile) -> StudentP
         raise Exception(f"Failed to update student profile: {response.status_code}")
 
     student_data = response.json()
+    student_data["student_id"] = student_id
     return StudentProfile(**student_data)

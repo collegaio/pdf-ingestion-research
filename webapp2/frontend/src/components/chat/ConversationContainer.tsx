@@ -121,9 +121,15 @@ const ConversationContainer = ({
       optimisticData: optomisticNewMessages,
     };
 
-    await mutateMessages(updateFn(), options);
-    setHasSentMessage(true);
-    setMessage("");
+    try {
+      await mutateMessages(updateFn(), options);
+      setHasSentMessage(true);
+      setMessage("");
+      setErrorMessage("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setErrorMessage((error as Error).message);
+    }
   };
 
   const scrollToBottom = () => {
