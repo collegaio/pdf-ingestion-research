@@ -75,6 +75,7 @@ async def extract_student_info(state: InfoExtractionState):
 
     # Invoke the LLM
     print("full_prompt:", full_prompt)
+    print("state:", state)
     llm_response = await cohere_langchain_llm.ainvoke(full_prompt)
 
     print("llm_response:", llm_response)
@@ -86,15 +87,14 @@ async def extract_student_info(state: InfoExtractionState):
 
     try:
         parsed_response = parser.parse(llm_response.content)
+        print("parsed_response:", parsed_response)
 
         # Extract the properties from the nested structure
         extracted_info = parsed_response.get("properties", {})
 
         # Create StudentProfile object
-        student_profile = StudentProfile(
-            **extracted_info,
-            student_id=state["student_id"],
-        )
+        extracted_info["student_id"] = state["student_id"]
+        student_profile = StudentProfile(**extracted_info)
 
         # Return the updated state with the extracted StudentProfile
         return {
