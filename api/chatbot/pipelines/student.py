@@ -91,7 +91,10 @@ async def extract_student_info(state: InfoExtractionState):
         extracted_info = parsed_response.get("properties", {})
 
         # Create StudentProfile object
-        student_profile = StudentProfile(**extracted_info)
+        student_profile = StudentProfile(
+            **extracted_info,
+            student_id=state["student_id"],
+        )
 
         # Return the updated state with the extracted StudentProfile
         return {
