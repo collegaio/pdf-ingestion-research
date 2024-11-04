@@ -22,6 +22,7 @@ def get_student_profile(student_id: str) -> StudentProfile:
     student_data = response.json()
 
     return StudentProfile(
+        student_id=student_data["id"],
         unweighted_gpa=student_data["unweightedGPA"],
         geographic_preferences=student_data["geographicPreferences"],
     )
