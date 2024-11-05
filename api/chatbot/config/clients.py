@@ -45,13 +45,13 @@ dataset_config = DatasetsConfig(
         "datasets": {
             "cds_files": {
                 "properties": {
-                    "description": "College admissions data including GPA, standardized test scores, demographic data, and financial aid award sizes",
+                    "description": "College for specific schools such as GPA, standardized test scores, demographic data, demographics, key dates, and financial aid award sizes",
                     "datapoint_prefix": "Admissions data for ",
                 }
             },
             "training_info": {
                 "properties": {
-                    "description": "Tips for applying to college",
+                    "description": "General tips for applying to college",
                     "datapoint_prefix": "",
                 }
             },
