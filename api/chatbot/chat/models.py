@@ -1,6 +1,7 @@
+import json
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 
 
 class Datapoint(BaseModel):
@@ -17,7 +18,7 @@ class Dataset(BaseModel):
 
 
 class StudentProfile(BaseModel):
-    student_id: str
+    student_id: str = Field(description="The student's ID")
     unweighted_gpa: float | None = Field(
         description="The student's unweighted GPA", default=None
     )

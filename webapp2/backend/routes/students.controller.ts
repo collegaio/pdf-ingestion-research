@@ -72,7 +72,9 @@ const router = (
 
     async (request, response) => {
       const studentId = request.params.studentId;
+      console.log("update student:", request.body);
       const student = await updateStudentProfile(studentId, request.body);
+      console.log("updated student:", convertStudent(student));
 
       return response.send(convertStudent(student));
     }

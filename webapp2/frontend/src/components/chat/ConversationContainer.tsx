@@ -166,7 +166,7 @@ const ConversationContainer = ({
         <div className="col-span-4 col-start-2 mx-4 flex h-full flex-grow flex-col rounded-lg md:col-span-4">
           {!hasMessages ? (
             <div className="flex h-full w-full flex-grow flex-col items-center justify-center space-y-8">
-              <h1 className="text-center text-4xl font-bold tracking-tight md:text-6xl">
+              <h1 className="text-center text-4xl font-extrabold tracking-tight md:text-6xl">
                 Welcome to Collega!
               </h1>
 
@@ -204,46 +204,50 @@ const ConversationContainer = ({
               </div>
             </div>
           ) : (
-            <div className="flex w-full flex-grow flex-col">
-              <div className="flex flex-grow flex-col justify-end space-y-2 overflow-y-auto p-4">
-                {messagesResponse?.messages.map((message) => (
-                  <div
-                    className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
-                    key={message.id}
-                  >
-                    <div className="chat-bubble whitespace-pre-wrap shadow-lg">
-                      {message.text}
+            <div className="flex h-full w-full flex-grow flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <div className="flex flex-col justify-end space-y-2 p-4">
+                  {messagesResponse?.messages.map((message) => (
+                    <div
+                      className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}
+                      key={message.id}
+                    >
+                      <div className="chat-bubble whitespace-pre-wrap shadow-lg">
+                        {message.text}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                {errorMessage && (
-                  <div className="chat chat-start">
-                    <div className="chat-bubble chat-bubble-warning whitespace-pre-wrap shadow-lg">
-                      Something went wrong: {errorMessage}
+                  {errorMessage && (
+                    <div className="chat chat-start relative">
+                      <div className="chat-bubble chat-bubble-warning whitespace-pre-wrap shadow-lg">
+                        Something went wrong: {errorMessage}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {isLoadingReply && (
-                  <div className="chat chat-start">
-                    <div className="chat-bubble shadow-lg">
-                      <span className="loading loading-bars" />
+                  {isLoadingReply && (
+                    <div className="chat chat-start">
+                      <div className="chat-bubble shadow-lg">
+                        <span className="loading loading-bars" />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <div ref={messagesEndRef} />
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
-            </div>
-          )}
 
-          {hasMessages && (
-            <ChatTextbox
-              message={message}
-              setMessage={setMessage}
-              onSendMessage={handleSendMessage}
-            />
+              {hasMessages && (
+                <div className="p-4">
+                  <ChatTextbox
+                    message={message}
+                    setMessage={setMessage}
+                    onSendMessage={handleSendMessage}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -41,12 +41,20 @@ def update_student_profile(student_id: str, profile: StudentProfile) -> StudentP
     """
     response = requests.put(
         f"{env.BACKEND_URL}/students/{student_id}",
-        json={k: v for k, v in profile.model_dump().items() if v is not None},
+        json={
+            "unweightedGPA": profile.unweighted_gpa,
+            "geographicPreferences": profile.geographic_preferences,
+        },
+        headers={"Content-Type": "application/json"},
     )
 
     if response.status_code != 200:
         raise Exception(f"Failed to update student profile: {response.status_code}")
 
     student_data = response.json()
-    student_data["student_id"] = student_id
-    return StudentProfile(**student_data)
+
+    return StudentProfile(
+        student_id=student_data["id"],
+        unweighted_gpa=student_data["unweightedGPA"],
+        geographic_preferences=student_data["geographicPreferences"],
+    )

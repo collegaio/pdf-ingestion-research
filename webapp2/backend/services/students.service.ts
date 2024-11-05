@@ -34,6 +34,8 @@ export const updateStudentProfile = async (
       major_interests: update.majorInterests ?? [],
       class_year: update.classYear,
       graduation_year: update.graduationYear,
+      unweighted_gpa: update.unweightedGPA,
+      weighted_gpa: update.weightedGPA,
     },
   });
 

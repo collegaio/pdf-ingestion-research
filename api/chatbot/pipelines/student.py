@@ -52,7 +52,7 @@ async def extract_student_info(state: InfoExtractionState):
             ("human", "{conversation}"),
             (
                 "human",
-                "Please extract the student information and format it as follows:",
+                "Please extract the student information and return it in JSON format according to the following schema:",
             ),
             ("human", "{format_instructions}"),
         ],
@@ -69,8 +69,8 @@ async def extract_student_info(state: InfoExtractionState):
     # Create the full prompt
     full_prompt = prompt.format_messages(
         conversation=conversation,
-        format_instructions=parser.get_format_instructions(),
-        # format_instructions=StudentProfile.model_json_schema(),
+        # format_instructions=parser.get_format_instructions(),
+        format_instructions=StudentProfile.model_json_schema(),
     )
 
     # Invoke the LLM
@@ -84,13 +84,19 @@ async def extract_student_info(state: InfoExtractionState):
 
     try:
         parsed_response = parser.parse(llm_response.content)
+        print("parsed_response:", parsed_response)
+
+        if "properties" in parsed_response:
+            parsed_response = parsed_response["properties"]
 
         # Extract the properties from the nested structure
-        extracted_info = parsed_response.get("properties", {})
 
         # Create StudentProfile object
-        extracted_info["student_id"] = state["student_id"]
-        student_profile = StudentProfile(**extracted_info)
+        student_profile = StudentProfile(
+            student_id=state["student_id"],
+            unweighted_gpa=parsed_response["unweighted_gpa"],
+            geographic_preferences=parsed_response["geographic_preferences"],
+        )
 
         # Return the updated state with the extracted StudentProfile
         return {
@@ -122,12 +128,19 @@ def update_student_info(state: InfoExtractionState):
     print("current student profile:", current_student_profile)
 
     for field, value in state["student_profile"]:
-        if getattr(current_student_profile, field) is None:
+        current_value = getattr(current_student_profile, field)
+
+        if (
+            current_value is None
+            or current_value == ""
+            or current_value == 0
+            or current_value == {}
+        ):
             setattr(current_student_profile, field, value)
 
+    print("outgoing update_student_info state:", current_student_profile)
     update_student_profile(state["student_id"], current_student_profile)
 
-    print("outgoing update_student_info state:", current_student_profile)
     student_info_message = SystemMessage(
         content=f"Student Profile: {current_student_profile}"
     )

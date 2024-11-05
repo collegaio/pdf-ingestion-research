@@ -23,8 +23,10 @@ pinecone_client = Pinecone(api_key=PINECONE_API_KEY)
 cohere_langchain_llm = ChatBedrockConverse(
     # credentials_profile_name="collega-prod",
     client=bedrock_client,
-    model="cohere.command-r-v1:0",
+    # model="cohere.command-r-v1:0",
+    model="cohere.command-r-plus-v1:0",
     # streaming=True,
+    verbose=True,
 )
 
 cohere_langchain_embed_model = BedrockEmbeddings(
