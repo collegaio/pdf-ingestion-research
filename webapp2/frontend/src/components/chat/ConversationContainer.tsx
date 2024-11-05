@@ -205,8 +205,8 @@ const ConversationContainer = ({
             </div>
           ) : (
             <div className="flex h-full w-full flex-grow flex-col">
-              <div className="flex-1 overflow-y-auto">
-                <div className="flex flex-col justify-end space-y-2 p-4">
+              <div className="flex flex-1 flex-col overflow-y-auto">
+                <div className="mt-auto flex flex-col space-y-2 p-4">
                   {messagesResponse?.messages.map((message) => (
                     <div
                       className={`chat ${MessageRoles.Chatbot === message.role ? "chat-start" : "chat-end"}`}

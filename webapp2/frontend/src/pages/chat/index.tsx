@@ -6,12 +6,12 @@ import { useHomepageStudentStore } from "../../state/student";
 import { createStudent } from "../../actions/students";
 
 const ChatPage = () => {
-  const { conversationId, setConversationId, hasLoadedConversation } =
-    useHomepageConversationStore((state) => ({
+  const { conversationId, setConversationId } = useHomepageConversationStore(
+    (state) => ({
       conversationId: state.conversationId,
       setConversationId: state.setConversationId,
-      hasLoadedConversation: state._hasHydrated,
-    }));
+    }),
+  );
 
   const { studentId, setStudentId, hasLoadedStudent } = useHomepageStudentStore(
     (state) => ({
@@ -21,32 +21,26 @@ const ChatPage = () => {
     }),
   );
 
-  // Create conversation if no conversation
+  // Create student and conversation if no student or conversation
   useEffect(() => {
-    const handleCreateConversation = async (studentId: string) => {
-      const conversation = await createConversation(studentId);
-      setConversationId(conversation.id);
-    };
-
-    if (hasLoadedConversation && !conversationId && studentId) {
-      void handleCreateConversation(studentId);
-    }
-  }, [conversationId, hasLoadedConversation, studentId, setConversationId]);
-
-  // Create student if no student
-  useEffect(() => {
-    if (hasLoadedStudent && !studentId) {
+    if (hasLoadedStudent && !studentId && !conversationId) {
       const handleCreateStudent = async () => {
         const student = await createStudent();
         setStudentId(student.id);
+
+        const conversation = await createConversation(student.id);
+        setConversationId(conversation.id);
       };
 
       void handleCreateStudent();
     }
-  }, [hasLoadedStudent, studentId, setStudentId]);
-
-  console.log("conversationId:", conversationId);
-  console.log("studentId:", studentId);
+  }, [
+    hasLoadedStudent,
+    studentId,
+    conversationId,
+    setStudentId,
+    setConversationId,
+  ]);
 
   return (
     <main className="flex flex-col items-center">
