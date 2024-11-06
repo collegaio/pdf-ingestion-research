@@ -37,6 +37,7 @@ def make_tool_selector(tool_vectorstore: VectorStore):
 
         query = last_user_message.content
         print("query:", query)
+        # TODO: use LLM to get subject from query
         tool_documents = await tool_vectorstore.asimilarity_search(
             query,
             k=1,
@@ -45,6 +46,7 @@ def make_tool_selector(tool_vectorstore: VectorStore):
         )
 
         print("tool_documents:", tool_documents)
+        # TODO: use LLM to filter tools
         selected = {
             "selected_tools": [],
             "selected_workflows": [],
@@ -78,13 +80,17 @@ def make_agent(llm: BaseChatModel, tools: List[BaseTool]):
 
 
 def choose_next_nodes(state: State):
+    # NOTE: can only select one tool or workflow at a time
     nodes = []
-
-    if state["selected_tools"] != []:
-        nodes.append("agent")
 
     for workflow in state["selected_workflows"]:
         nodes.append(workflow)
+
+    if nodes != []:
+        return nodes
+
+    if state["selected_tools"] != []:
+        nodes.append("agent")
 
     return nodes
 

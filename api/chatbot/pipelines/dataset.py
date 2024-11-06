@@ -11,9 +11,19 @@ from langgraph.graph.state import CompiledStateGraph
 from chatbot.pipelines.tools import make_tool_pipeline
 from chatbot.chat.models import Datapoint, Dataset
 
+# DEFAULT_QUESTION_ANSWERING_TEMPLATE = """
+# Answer the user's questions based on the below context.
+# If the context doesn't contain any relevant information to the question,
+# don't make something up and just say "I don't know":
+
+# {question}
+
+# Context:
+# {context}
+# """
 DEFAULT_QUESTION_ANSWERING_TEMPLATE = """
-Answer the user's questions based on the below context. 
-If the context doesn't contain any relevant information to the question, don't make something up and just say "I don't know":
+Answer the user's questions based on the below context.
+Always give an answer, but do not provide details that are not in the context.
 
 {question}
 
