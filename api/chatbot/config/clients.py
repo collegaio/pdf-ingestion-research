@@ -9,7 +9,6 @@ from chatbot.adapters.datasets import (
 )
 
 import boto3
-import dspy
 
 from chatbot.config.env import PINECONE_API_KEY
 
