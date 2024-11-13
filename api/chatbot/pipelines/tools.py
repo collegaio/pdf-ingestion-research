@@ -1,34 +1,91 @@
-from doctest import debug
-from tabnanny import verbose
+import json
 from typing import Annotated, List, TypedDict
 
-from langchain_core.messages import HumanMessage
+from pydantic import BaseModel, Field
+from langchain_core.messages import AIMessage
 from langchain_core.vectorstores.in_memory import InMemoryVectorStore
 from langchain_core.vectorstores import VectorStore
 from langchain_core.language_models import BaseChatModel
 from langchain_core.embeddings import Embeddings
 from langchain_core.documents import Document
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.tools import BaseTool
 from langgraph.graph import START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 
-from chatbot.chat.models import StudentProfile
-
+from chatbot.config.clients import cohere_langchain_llm
 
 class State(TypedDict):
     # student_id: str
     # student_profile: StudentProfile
     messages: Annotated[list, add_messages]
-    selected_tools: list[str]
-    selected_workflows: list[str]
+    selected_tool: str | None
+    selected_workflow: str | None
 
 
 class Workflow(TypedDict):
     name: str
     description: str
     workflow: CompiledStateGraph
+
+
+class ToolSelectionOutput(BaseModel):
+    selected_tool_id: str = Field(description="The id of the selected tool")
+
+
+async def pick_tool(tool_documents: List[Document], query: str):
+    parser = JsonOutputParser(pydantic_object=ToolSelectionOutput)
+
+    # Create a prompt template
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "Given the following tools and query, select the most relevant tool to answer the query.",
+            ),
+            ("human", "Query: {query}"),
+            ("human", "Tools: {tool_documents}"),
+            (
+                "human",
+                "Return the id of the selected tool in JSON format according to the following schema:",
+            ),
+            ("human", "{format_instructions}"),
+        ],
+    )
+
+    # Create the full prompt
+    full_prompt = prompt.format_messages(
+        query=query,
+        tool_documents="\n".join(
+            [f"{doc.id}: {doc.page_content}" for doc in tool_documents]
+        ),
+        # format_instructions=ToolSelectionOutput.model_json_schema(),
+        format_instructions=parser.get_format_instructions(),
+    )
+
+    # Invoke the LLM
+    llm_response = await cohere_langchain_llm.ainvoke(full_prompt)
+    print("llm_response:", llm_response)
+
+    # Parse the LLM output
+    # json_start = llm_response.content.find("{")
+    # json_end = llm_response.content.rfind("}") + 1
+    # json_str = llm_response.content[json_start:json_end]
+
+    try:
+        parsed_response = parser.parse(llm_response.content)
+        print("parsed_response:", parsed_response)
+
+        # Extract the properties from the nested structure
+        tool_selection = ToolSelectionOutput(**parsed_response)
+
+        return next((doc for doc in tool_documents if doc.id == tool_selection.selected_tool_id), None)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON: {e}")
+        return None
 
 
 def make_tool_selector(tool_vectorstore: VectorStore):
@@ -40,23 +97,25 @@ def make_tool_selector(tool_vectorstore: VectorStore):
         # TODO: use LLM to get subject from query
         tool_documents = await tool_vectorstore.asimilarity_search(
             query,
-            k=1,
+            k=2,
             debug=False,
             verbose=False,
         )
 
         print("tool_documents:", tool_documents)
-        # TODO: use LLM to filter tools
+        # tool_documents: [Document(id='guide_to_college_admissions', metadata={'tool_name': 'guide_to_college_admissions'}, page_content='guide_to_college_admissions')]
         selected = {
-            "selected_tools": [],
-            "selected_workflows": [],
+            "selected_tool": None,
+            "selected_workflow": None,
         }
 
-        for doc in tool_documents:
-            if "workflow_name" in doc.metadata:
-                selected["selected_workflows"].append(doc.id)
-            elif "tool_name" in doc.metadata:
-                selected["selected_tools"].append(doc.id)
+        selected_tool = await pick_tool(tool_documents, query)
+
+        if selected_tool:
+            if "workflow_name" in selected_tool.metadata:
+                selected["selected_workflow"] = selected_tool.metadata["workflow_name"]
+            elif "tool_name" in selected_tool.metadata:
+                selected["selected_tool"] = selected_tool.metadata["tool_name"]
 
         return selected
 
@@ -67,7 +126,7 @@ def make_agent(llm: BaseChatModel, tools: List[BaseTool]):
     async def agent(state: State):
         print("graph state:", state)
         llm_with_tools = llm.bind_tools(
-            [tool for tool in tools if tool.name in state["selected_tools"]]
+            [tool for tool in tools if tool.name == state["selected_tool"]]
         )
 
         result = await llm_with_tools.ainvoke(state["messages"])
@@ -83,13 +142,9 @@ def choose_next_nodes(state: State):
     # NOTE: can only select one tool or workflow at a time
     nodes = []
 
-    for workflow in state["selected_workflows"]:
-        nodes.append(workflow)
-
-    if nodes != []:
-        return nodes
-
-    if state["selected_tools"] != []:
+    if state["selected_workflow"]:
+        nodes.append(state["selected_workflow"])
+    elif state["selected_tool"]:
         nodes.append("agent")
 
     return nodes

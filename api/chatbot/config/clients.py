@@ -2,13 +2,14 @@ from langchain_aws import ChatBedrockConverse, BedrockEmbeddings
 from langchain_pinecone import PineconeVectorStore
 
 from pinecone import Pinecone
-import boto3
-
 from chatbot.config import env
 from chatbot.adapters.datasets import (
     DatasetsConfig,
     load_datasets,
 )
+
+import boto3
+import dspy
 
 from chatbot.config.env import PINECONE_API_KEY
 
